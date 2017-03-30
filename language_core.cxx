@@ -27,16 +27,24 @@ namespace language_core {
 
 lisp_abi::object* quote(machine &m, lisp_abi::object* obj) { return obj; }
 
-lisp_abi::object* car(machine &m, lisp_abi::pair* obj) { return obj ? obj->value.head : nullptr; }
-lisp_abi::object* cdr(machine &m, lisp_abi::pair* obj) { return obj ? obj->value.tail : nullptr; }
-lisp_abi::object* print(machine& m, lisp_abi::pair* obj) { std::cout << *obj << std::endl; return obj; }
-lisp_abi::object* quit(machine &m) { exit(EXIT_SUCCESS); }
+lisp_abi::object* car(machine &m, lisp_abi::pair* obj)     { return obj ? obj->value.head : nullptr; }
+lisp_abi::object* cdr(machine &m, lisp_abi::pair* obj)     { return obj ? obj->value.tail : nullptr; }
+
+lisp_abi::object* cons(machine &m, lisp_abi::object* obj, lisp_abi::pair* list) { 
+    utility::list_view list_view(m, list);
+    list_view.push_front(obj);
+    return list_view.front_pair();
+}
+
+lisp_abi::object* print(machine& m, lisp_abi::pair* obj)   { std::cout << *obj << std::endl; return obj; }
+lisp_abi::object* quit(machine &m)                         { exit(EXIT_SUCCESS); }
 
 void init_language_core(machine& m) {
     YATL_EXPORT_SYNTAX(m, quote);
 
     YATL_EXPORT_FUNCTION(m, car);
     YATL_EXPORT_FUNCTION(m, cdr);
+    YATL_EXPORT_FUNCTION(m, cons);
     YATL_EXPORT_FUNCTION(m, print);
     YATL_EXPORT_FUNCTION(m, quit);
 }
