@@ -29,11 +29,15 @@ namespace yatl {
 namespace error {
 namespace detail {
 template<typename head_t, typename... tail_t>
-void print(std::ostream& o, head_t&& head, tail_t&&... tail) {
+void print(std::ostream& o, head_t&& head, tail_t&&... tail);
+inline void print(std::ostream&) {};
+    
+template<typename head_t, typename... tail_t>
+void print(std::ostream& o, head_t&& head, tail_t&&... tail)
+{
         o << head;
         print(o, std::forward<tail_t>(tail)...);
-};
-inline void print(std::ostream&) {};
+}
 }
 
 struct error : std::exception {

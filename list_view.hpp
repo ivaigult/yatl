@@ -109,10 +109,10 @@ public:
 	}
 
     template<typename object_t, typename... args_t>
-    void emplace_front(args_t&&... args) { push_front(m.alloc<object_t>(std::forward<args_t>(args)...)) }
+    void emplace_front(args_t&&... args) { push_front(_m.template alloc<object_t>(std::forward<args_t>(args)...)); }
 
     template<typename object_t, typename... args_t>
-    void emplace_back(args_t&&... args) { push_back(m.alloc<object_t>(std::forward<args_t>(args)...)) }
+    void emplace_back(args_t&&... args)  { push_back(_m.template alloc<object_t>(std::forward<args_t>(args)...)); }
 private:
     machine& _m;
 };

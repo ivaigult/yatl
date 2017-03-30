@@ -37,8 +37,8 @@ struct tuple_runtime_set {
     {
         if (index == (current_index - 1)) {
             typedef std::tuple<args_t...> args_type;
-            typedef std::tuple_element<current_index - 1, args_type>::type ptr_argument_type;
-            typedef std::remove_pointer<ptr_argument_type>::type argument_type;
+            typedef typename std::tuple_element<current_index - 1, args_type>::type ptr_argument_type;
+            typedef typename std::remove_pointer<ptr_argument_type>::type argument_type;
             std::get<current_index - 1>(args) = &lisp_abi::object_cast<argument_type>(*obj);
         } else {
             tuple_runtime_set<current_index - 1, args_t...>{}(index, args, obj);
