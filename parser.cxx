@@ -61,8 +61,10 @@ void parser::_complete_object(lisp_abi::object* obj) {
         _list_stack.top().push_back(obj);
     }
 
-    if (!_quote_stack.empty() && _quote_stack.top() == _list_stack.top().front_pair())
+    if (!_quote_stack.empty() && _quote_stack.top() == _list_stack.top().front_pair()) {
+        _quote_stack.pop();
         _complete_list();
+    }
 }
 
 void parser::_complete_list() {

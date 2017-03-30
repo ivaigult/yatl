@@ -38,8 +38,12 @@ struct object {
         number,
         string,
         native_function,
+        native_syntax,
         user_data,
     };
+    
+    typedef std::integral_constant<object::object_type, object_type::unknown> type_id_type;
+
     object(object_type type) : type(type) {}
     object(const object&) = default;
     object_type type;
@@ -85,21 +89,35 @@ typedef custom_object<float,                 object::object_type::number>       
 typedef custom_object<pair_type,             object::object_type::pair>            pair;
 
 struct native_function_type {
+    native_function_type(const char* name) : name(name) {}
     virtual ~native_function_type() {}
     virtual lisp_abi::object* eval(machine &m, lisp_abi::pair* obj) = 0;
+    const char* name;
 };
 
 typedef custom_object<native_function_type*, object::object_type::native_function> native_function;
-typedef custom_object<void*, object::object_type::user_data>                       user_data;
+typedef custom_object<native_function_type*, object::object_type::native_syntax>   native_syntax;
+typedef custom_object<void*,                 object::object_type::user_data>       user_data;
+
+template<typename object_t>
+object_t& object_cast(object& o) {
+    if (object_t::type_id_type::value != o.type)
+        throw error::error("unexpected object type \'", o.type, "\', \'", object_t::type_id_type::value, "\' was expected");
+    return static_cast<object_t&>(o);
+}
+
+template<> inline object& object_cast<object>(object& o) { return o; }
 
 template<typename object_t>
 object_t* object_cast(object* o) {
     if (!o)
         return nullptr;
     if (object_t::type_id_type::value != o->type)
-        throw error::error("unexpected object type \'", o->type, "\', \'", object_t::type_id_type::value, "\' was expected");
+        return nullptr;
     return static_cast<object_t*>(o);
 }
+
+
 
 std::ostream& operator<<(std::ostream& os, const object& obj);
 std::ostream& operator<<(std::ostream& os, const object::object_type& t);

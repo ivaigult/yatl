@@ -24,8 +24,10 @@ set (CMAKE_CXX_STANDARD 11)
 
 add_executable(yatl
   yatl.cxx
-  bindings_list.cxx
+  # bindings_list.cxx
   error.hpp
+  function_helpers.hpp
+  language_core.cxx
   lisp_abi.hpp
   list_view.hpp
   machine.cxx

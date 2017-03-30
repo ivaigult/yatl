@@ -44,19 +44,15 @@ const tokenizer::token_stream_t& tokenizer::tokenize(std::string line) {
             _emit_token(current_token);
             _token_stream.push_back({tokenizer::token_type::left_bracket, "(" });
             continue;
-        }
-        else if (sym == ')') {
+        } else if (sym == ')') {
             _emit_token(current_token);
             _token_stream.push_back({tokenizer::token_type::right_bracket, ")" });
             continue;
-        }
-        else if (sym == '\'') {
+        } else if (sym == '\'') {
             _emit_token(current_token);
             _token_stream.push_back({ tokenizer::token_type::apostrophe, "\'" });
             continue;
-        }
-        else if (std::isspace(sym))
-        {
+        } else if (std::isspace(sym)) {
             _emit_token(current_token);
             continue;
         }

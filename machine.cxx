@@ -23,10 +23,12 @@
 #include "list_view.hpp"
 
 namespace yatl {
+namespace language_core {
+void init_language_core(machine& m);
+}
 
-void register_list_bindings(machine& m);
 machine::machine() {
-    register_list_bindings(*this);
+    language_core::init_language_core(*this);
 }
 
 lisp_abi::object* machine::eval(lisp_abi::object* object) {
@@ -52,18 +54,27 @@ lisp_abi::object* machine::eval(lisp_abi::object* object) {
         lisp_abi::pair* list = static_cast<lisp_abi::pair*>(object);
         
         utility::list_view list_view(*this, list);
-        lisp_abi::object* fisrt_obj = list_view.front();
 
-        lisp_abi::symbol* sym = lisp_abi::object_cast<lisp_abi::symbol>(fisrt_obj);
-        lisp_abi::object* assoc_obj = eval(sym);
+        lisp_abi::object* head_obj = list_view.front();
+        lisp_abi::pair* tail_obj = lisp_abi::object_cast<lisp_abi::pair>(list->value.tail);
 
-        lisp_abi::native_function* callable = lisp_abi::object_cast<lisp_abi::native_function>(assoc_obj);
+        if (lisp_abi::symbol* sym = lisp_abi::object_cast<lisp_abi::symbol>(head_obj)) {
+            lisp_abi::object* evaluated_head = eval(sym);
 
-        lisp_abi::object* tail_obj = list->value.tail;
-        lisp_abi::pair*   tail_list = lisp_abi::object_cast<lisp_abi::pair>(list->value.tail);
-
-        // @todo: eval the shit
-        return callable->value->eval(*this, tail_list);
+            if (lisp_abi::native_function* callable = lisp_abi::object_cast<lisp_abi::native_function>(evaluated_head)) {
+                utility::list_view arguments_list(*this);
+                utility::list_view::iterator it = list_view.begin(); ++it;
+                for (; it != list_view.end(); ++it) {
+                    arguments_list.push_back(eval(*it));
+                }
+                return callable->value->eval(*this, arguments_list.front_pair());
+            } else if(lisp_abi::native_syntax* callable = lisp_abi::object_cast<lisp_abi::native_syntax>(evaluated_head)) {
+                return callable->value->eval(*this, tail_obj);
+            } else {
+                // @todo: evaluated_head might be null
+                throw error::error("unable to call ", evaluated_head->type);
+            }
+        }
     }
     break;
     default:
