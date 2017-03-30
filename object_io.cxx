@@ -26,6 +26,7 @@
 namespace yatl {
 namespace lisp_abi {
 
+
 const char* object_type2str(object::object_type type) {
     switch (type) {
     case object::object_type::pair:            return "pair";
@@ -35,6 +36,18 @@ const char* object_type2str(object::object_type type) {
     case object::object_type::native_function: return "native_function";
     case object::object_type::user_data:       return "user_data";
     default:                                   return "unknown";
+    }
+}
+
+std::ostream& operator<<(std::ostream& os, const object::object_type& type) {
+    switch (type) {
+    case object::object_type::pair:            return os << "pair";
+    case object::object_type::symbol:          return os << "symbol";
+    case object::object_type::number:          return os << "number";
+    case object::object_type::string:          return os << "string";
+    case object::object_type::native_function: return os << "native_function";
+    case object::object_type::user_data:       return os << "user_data";
+    default:                                   return os << "unknown";
     }
 }
 

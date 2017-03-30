@@ -96,15 +96,13 @@ template<typename object_t>
 object_t* object_cast(object* o) {
     if (!o)
         return nullptr;
-    // @todo: print propper argument types
     if (object_t::type_id_type::value != o->type)
-        throw error::error("unexpected object type ", "", "", ", was expected");
+        throw error::error("unexpected object type \'", o->type, "\', \'", object_t::type_id_type::value, "\' was expected");
     return static_cast<object_t*>(o);
 }
 
-const char* object_type2str(object::object_type type);
-
 std::ostream& operator<<(std::ostream& os, const object& obj);
+std::ostream& operator<<(std::ostream& os, const object::object_type& t);
 
 template<typename value_type_t, object::object_type type_id>
 std::ostream& operator<<(std::ostream& os, const custom_object<value_type_t, type_id>& obj) { return os << obj.value; }

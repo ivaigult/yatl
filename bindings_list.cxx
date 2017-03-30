@@ -114,19 +114,22 @@ struct simple_function<lisp_abi::object* (machine&, args_t...), func_ptr> : publ
     }
 };
 
-lisp_abi::object* car(machine &m, lisp_abi::pair* obj) { return obj? obj->value.head : nullptr; }
-lisp_abi::object* cdr(machine &m, lisp_abi::pair* obj) { return obj? obj->value.tail : nullptr; }
+lisp_abi::object* car(machine &m, lisp_abi::pair* obj)   { return obj? obj->value.head : nullptr; }
+lisp_abi::object* cdr(machine &m, lisp_abi::pair* obj)   { return obj? obj->value.tail : nullptr; }
+lisp_abi::object* print(machine& m, lisp_abi::pair* obj) { std::cout << *obj << std::endl; return obj; }
 lisp_abi::object* quit(machine &m) { exit(EXIT_SUCCESS); }
 
 
 typedef simple_function<decltype(car), car> car_t;
 typedef simple_function<decltype(cdr), cdr> cdr_t;
 typedef simple_function<decltype(quit), quit> quit_t;
+typedef simple_function<decltype(print), print> print_t;
 
 void register_list_bindings(machine& m) {
     m.assoc("car",  m.alloc<native_function>(new car_t()));
     m.assoc("cdr",  m.alloc<native_function>(new cdr_t()));
     m.assoc("quit", m.alloc<native_function>(new quit_t()));
+    m.assoc("print", m.alloc<native_function>(new print_t()));
 }
 
 }
