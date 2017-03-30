@@ -47,8 +47,8 @@ std::ostream& operator<<(std::ostream& os, const string& obj) {
 std::ostream& operator<<(std::ostream& os, const pair& obj) {
     os << "(";
 	// @todo: get rid of recursion and use stack
-    const utility::list_view list_view(*static_cast<machine*>(nullptr), const_cast<pair*>(&obj));
-    utility::list_view::iterator it = list_view.begin();
+    const utility::constant_list_view list_view(const_cast<pair*>(&obj));
+    utility::constant_list_view::iterator it = list_view.begin();
     for (;;) {
         os << **it;
         ++it;
