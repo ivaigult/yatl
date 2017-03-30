@@ -53,6 +53,7 @@ const tokenizer::token_stream_t& tokenizer::tokenize(std::string line) {
         else if (sym == '\'') {
             _emit_token(current_token);
             _token_stream.push_back({ tokenizer::token_type::apostrophe, "\'" });
+            continue;
         }
         else if (std::isspace(sym))
         {

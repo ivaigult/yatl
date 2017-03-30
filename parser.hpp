@@ -35,16 +35,16 @@ class parser
 public:
     parser(repl& repl) 
         : _repl(repl)
-        , _quote(0)
     {}
 
     typedef std::vector<lisp_abi::object*> object_stream_t;
     object_stream_t& parse(const tokenizer::token_stream_t& tokens);
 private:
+    void _complete_object(lisp_abi::object* obj);
     void _complete_list();
     object_stream_t                _object_stream;
-    std::uint32_t                  _quote;
     std::stack<utility::list_view> _list_stack;
+    std::stack<lisp_abi::pair*>    _quote_stack;
     repl& _repl;
 };
 
