@@ -116,14 +116,16 @@ struct simple_function<lisp_abi::object* (machine&, args_t...), func_ptr> : publ
 }
 }
 
-
-
 #define YATL_EXPORT_FUNCTION(m, func) do {                                               \
 	typedef yatl::utility::simple_function<decltype(func), func> __##func##__t;          \
 	m.assoc(#func,  m.alloc<yatl::lisp_abi::native_function>(new __##func##__t(#func))); \
     } while (false)
 
-#define YATL_EXPORT_SYNTAX(m, func) do {                                                 \
-	typedef yatl::utility::simple_function<decltype(func), func> __##func##__t;          \
-	m.assoc(#func,  m.alloc<yatl::lisp_abi::native_syntax>(new __##func##__t(#func)));   \
+
+
+#define YATL_EXPORT_NAMED_SYNTAX(m, name, func) do {                                 \
+	typedef yatl::utility::simple_function<decltype(func), func> __##func##__t;      \
+	m.assoc(name,  m.alloc<yatl::lisp_abi::native_syntax>(new __##func##__t(name))); \
     } while (false)
+
+#define YATL_EXPORT_SYNTAX(m, func) YATL_EXPORT_NAMED_SYNTAX(m, #func, func)

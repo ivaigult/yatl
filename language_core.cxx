@@ -27,8 +27,16 @@ namespace language_core {
 
 lisp_abi::object* quote(machine &m, lisp_abi::object* obj) { return obj; }
 
-lisp_abi::object* car(machine &m, lisp_abi::pair* obj)     { return obj ? obj->value.head : nullptr; }
-lisp_abi::object* cdr(machine &m, lisp_abi::pair* obj)     { return obj ? obj->value.tail : nullptr; }
+// Conditionals
+lisp_abi::object* _if(machine &m, lisp_abi::object* obj, lisp_abi::object* t_result, lisp_abi::object* f_result) 
+{ return m.eval(obj) ? m.eval(t_result) : m.eval(f_result); }
+
+lisp_abi::object* eval(machine &m, lisp_abi::object* obj)  { return m.eval(obj); }
+
+lisp_abi::object* car(machine &m, lisp_abi::pair* list)     { return list ? list->value.head : nullptr; }
+lisp_abi::object* cdr(machine &m, lisp_abi::pair* list)     { return list ? list->value.tail : nullptr; }
+
+lisp_abi::object* set_car(machine &m, lisp_abi::pair* list, lisp_abi::object* obj) { return nullptr; }
 
 lisp_abi::object* cons(machine &m, lisp_abi::object* obj, lisp_abi::pair* list) { 
     utility::list_view list_view(m, list);
@@ -41,7 +49,9 @@ lisp_abi::object* quit(machine &m)                         { exit(EXIT_SUCCESS);
 
 void init_language_core(machine& m) {
     YATL_EXPORT_SYNTAX(m, quote);
+    YATL_EXPORT_NAMED_SYNTAX(m, "if", _if);
 
+    YATL_EXPORT_FUNCTION(m, eval);
     YATL_EXPORT_FUNCTION(m, car);
     YATL_EXPORT_FUNCTION(m, cdr);
     YATL_EXPORT_FUNCTION(m, cons);
