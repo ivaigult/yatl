@@ -33,8 +33,8 @@ lisp_abi::object* _if(machine &m, lisp_abi::object* obj, lisp_abi::object* t_res
 
 lisp_abi::object* eval(machine &m, lisp_abi::object* obj)  { return m.eval(obj); }
 
-lisp_abi::object* car(machine &m, lisp_abi::pair* list)     { return list ? list->value.head : nullptr; }
-lisp_abi::object* cdr(machine &m, lisp_abi::pair* list)     { return list ? list->value.tail : nullptr; }
+lisp_abi::object* car(machine &m, lisp_abi::pair& list)     { return list.value.head; }
+lisp_abi::object* cdr(machine &m, lisp_abi::pair& list)     { return list.value.tail; }
 
 lisp_abi::object* set_car(machine &m, lisp_abi::pair* list, lisp_abi::object* obj) { return nullptr; }
 

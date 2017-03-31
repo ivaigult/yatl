@@ -65,15 +65,17 @@ public:
     typedef const iterator const_iterator;
 
     iterator begin() { return _front; }
-    iterator end() { return nullptr; }
+    iterator end()   { return nullptr; }
     const_iterator begin() const { return _front; }
     const_iterator end()   const { return nullptr; }
 protected:
     void _adjust_back() {
-        if (!_back)
+        if (!_back) {
             _back = _front;
+        }
         if (!_back)
             return;
+        _size = 1;
         for (; _back->value.tail; ) {
             _back = lisp_abi::object_cast<lisp_abi::pair*>(_back->value.tail);
             ++_size;
