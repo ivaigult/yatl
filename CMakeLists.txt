@@ -24,7 +24,7 @@ set (CMAKE_CXX_STANDARD 11)
 
 add_executable(yatl
   yatl.cxx
-  # bindings_list.cxx
+  apply_workaround.hpp
   error.hpp
   function_helpers.hpp
   language_core.cxx

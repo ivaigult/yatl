@@ -24,9 +24,9 @@
 #include "lisp_abi.hpp"
 #include "machine.hpp"
 #include "list_view.hpp"
+#include "apply_workaround.hpp"
 
 #include <utility>
-
 
 namespace yatl {
 namespace utility {
@@ -51,31 +51,6 @@ struct tuple_runtime_set<0, args_t...> {
     bool operator()(size_t, std::tuple<args_t...>&, lisp_abi::object*) const
     { return false; }
 };
-
-template<int ...>
-struct sequence { };
-
-template<int index, int ...s>
-struct gen_sequence : gen_sequence<index - 1, index - 1, s...> { };
-
-template<int ...s>
-struct gen_sequence<0, s...> {
-    typedef sequence<s...> type;
-};
-
-template<typename... args_t>
-struct invoke {
-    typedef typename gen_sequence<sizeof...(args_t)>::type sequence_type;
-
-    template<int ...s>
-    lisp_abi::object* __invoke(sequence<s...>, lisp_abi::object*(*func_ptr)(machine& m, args_t...), machine& m, std::tuple<args_t...>& args) const {
-        return func_ptr(m, std::get<s>(args)...);
-    }
-
-    lisp_abi::object* operator() (lisp_abi::object*(*func_ptr)(machine& m, args_t...), machine& m, std::tuple<args_t...>& args) const {
-        return __invoke(sequence_type{}, func_ptr, m, args);
-    }
-};
 }
 
 template<typename function_t, function_t func_ptr>
@@ -87,21 +62,20 @@ struct simple_function<lisp_abi::object* (machine&, args_t...), func_ptr> : publ
         : native_function_type(name)
     {}
     virtual lisp_abi::object* eval(machine &m, lisp_abi::pair* list) {
-        std::tuple<args_t...> args;
+        std::tuple<args_t...> lisp_args;
         size_t arg_counter = 0;
 
         utility::list_view list_view(m, list);
         // @todo: handle too many arguments
         for (lisp_abi::object* o : list_view) {
             try {
-                detail::tuple_runtime_set<sizeof...(args_t), args_t...> {} (arg_counter, args, o);
+                detail::tuple_runtime_set<sizeof...(args_t), args_t...> {} (arg_counter, lisp_args, o);
             } catch (error::error& e) {
                 throw error::error("error while passing argument ", arg_counter, ": ", e.what());
             }
             ++arg_counter;
         };
         
-
         if (arg_counter < sizeof...(args_t)) {
             throw error::error("insufficient number of arguments ", 
                 arg_counter, 
@@ -110,7 +84,10 @@ struct simple_function<lisp_abi::object* (machine&, args_t...), func_ptr> : publ
                 " required"
             );
         }
-        return detail::invoke<args_t...>{}(func_ptr, m, args);
+
+        std::tuple<machine&, args_t&&...> args = std::tuple_cat(std::make_tuple(std::ref(m)), lisp_args);
+        using namespace yatl::apply_workaround;
+        return std::apply(func_ptr, args);
     }
 };
 }
