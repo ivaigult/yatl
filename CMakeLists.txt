@@ -37,6 +37,7 @@ add_executable(yatl
   parser.hpp
   repl.cxx
   repl.hpp
+  signature_validation.hpp
   tokenizer.cxx
   tokenizer.hpp
 )

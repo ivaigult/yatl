@@ -25,32 +25,12 @@
 #include "machine.hpp"
 #include "list_view.hpp"
 #include "apply_workaround.hpp"
+#include "signature_validation.hpp"
 
 #include <utility>
 
 namespace yatl {
 namespace utility {
-namespace detail {
-template<size_t current_index, typename... args_t>
-struct tuple_runtime_set {
-    void operator()(size_t index, std::tuple<args_t...>& args, lisp_abi::object* obj) const
-    {
-        if (index == (current_index - 1)) {
-            typedef std::tuple<args_t...> args_type;
-            typedef typename std::tuple_element<current_index - 1, args_type>::type current_element_t;
-            std::get<current_index - 1>(args) = lisp_abi::object_cast<current_element_t>(obj);
-        } else {
-            tuple_runtime_set<current_index - 1, args_t...>{}(index, args, obj);
-        }
-    }
-};
-
-template<typename... args_t>
-struct tuple_runtime_set<0, args_t...> {
-    bool operator()(size_t, std::tuple<args_t...>&, lisp_abi::object*) const
-    { return false; }
-};
-}
 
 template<typename function_t, function_t func_ptr>
 struct simple_function;
@@ -61,29 +41,7 @@ struct simple_function<lisp_abi::object* (machine&, args_t...), func_ptr> : publ
         : native_function_type(name)
     {}
     virtual lisp_abi::object* eval(machine &m, lisp_abi::pair* list) {
-        std::tuple<args_t...> lisp_args;
-        size_t arg_counter = 0;
-
-        utility::list_view list_view(m, list);
-        // @todo: handle too many arguments
-        for (lisp_abi::object* o : list_view) {
-            try {
-                detail::tuple_runtime_set<sizeof...(args_t), args_t...> {} (arg_counter, lisp_args, o);
-            } catch (error::error& e) {
-                throw error::error("error while passing argument ", arg_counter, ": ", e.what());
-            }
-            ++arg_counter;
-        };
-        
-        if (arg_counter < sizeof...(args_t)) {
-            throw error::error("insufficient number of arguments ", 
-                arg_counter, 
-                " provided ", 
-                sizeof...(args_t), 
-                " required"
-            );
-        }
-
+        std::tuple<args_t...> lisp_args = utility::validate_signature<args_t...>(list);
         std::tuple<machine&, args_t&&...> args = std::tuple_cat(std::make_tuple(std::ref(m)), lisp_args);
         using namespace yatl::apply_workaround;
         return std::apply(func_ptr, args);

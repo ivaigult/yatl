@@ -32,7 +32,8 @@ public:
     typedef lisp_abi::pair*   pair_type;
 
     constant_list_view(lisp_abi::pair* front = nullptr, lisp_abi::pair* back = nullptr)
-        : _front(front)
+        : _size(0)
+        , _front(front)
         , _back(back)
     { _adjust_back(); }
 
@@ -41,10 +42,11 @@ public:
         , _back(lv._back)
     {}
 
-    value_type front() { return _front->value.head; }
-    value_type back() { return _back->value.head; }
+    size_t     size() const { return _size;              }
+    value_type front()      { return _front->value.head; }
+    value_type back()       { return _back->value.head;  }
     pair_type  front_pair() { return _front; }
-    pair_type  back_pair() { return _back; }
+    pair_type  back_pair()  { return _back; }
     const value_type front()      const { return _front->value.head; }
     const value_type back()       const { return _back->value.head; }
     const pair_type  front_pair() const { return _front; }
@@ -73,10 +75,12 @@ protected:
         if (!_back)
             return;
         for (; _back->value.tail; ) {
-            _back = lisp_abi::object_cast<lisp_abi::pair>(_back->value.tail);
+            _back = lisp_abi::object_cast<lisp_abi::pair*>(_back->value.tail);
+            ++_size;
         }
     }
 
+    size_t          _size;
     lisp_abi::pair* _front;
     lisp_abi::pair* _back;
 };
@@ -96,7 +100,7 @@ public:
         , _m(lv._m)
     {}
 
-    void push_front(value_type o) { _front = _m.alloc<lisp_abi::pair>((lisp_abi::object*)o, (lisp_abi::object*)_front); }
+    void push_front(value_type o) { _front = _m.alloc<lisp_abi::pair>((lisp_abi::object*)o, (lisp_abi::object*)_front); ++_size;  }
     void push_back(value_type  o) { 
         lisp_abi::pair* new_item = _m.alloc<lisp_abi::pair>((lisp_abi::object*)o, (lisp_abi::object*)nullptr);
 
@@ -106,6 +110,7 @@ public:
             _back->value.tail = new_item;
             _back = new_item;
         }
+        ++_size;
 	}
 
     template<typename object_t, typename... args_t>
