@@ -50,7 +50,7 @@ lisp_abi::object* quit(machine &m)                         { exit(EXIT_SUCCESS);
 void init_language_core(machine& m) {
     YATL_EXPORT_SYNTAX(m, quote);
     YATL_EXPORT_NAMED_SYNTAX(m, "if", _if);
-
+    
     YATL_EXPORT_FUNCTION(m, eval);
     YATL_EXPORT_FUNCTION(m, car);
     YATL_EXPORT_FUNCTION(m, cdr);

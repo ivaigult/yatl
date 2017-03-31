@@ -23,7 +23,6 @@
 #include <string>
 #include <vector>
 #include <iostream>
-#include <type_traits>
 
 #include "error.hpp"
 
@@ -41,8 +40,6 @@ struct object {
         native_syntax,
         user_data,
     };
-    
-    typedef std::integral_constant<object::object_type, object_type::unknown> type_id_type;
 
     object(object_type type) : type(type) {}
     object(const object&) = default;
@@ -99,25 +96,47 @@ typedef custom_object<native_function_type*, object::object_type::native_functio
 typedef custom_object<native_function_type*, object::object_type::native_syntax>   native_syntax;
 typedef custom_object<void*,                 object::object_type::user_data>       user_data;
 
-template<typename object_t>
-object_t& object_cast(object& o) {
-    if (object_t::type_id_type::value != o.type)
-        throw error::error("unexpected object type \'", o.type, "\', \'", object_t::type_id_type::value, "\' was expected");
-    return static_cast<object_t&>(o);
+namespace detail {
+
+template<typename>
+struct object_cast_helper;
+
+template<typename underlying_to_t, object::object_type type_to>
+struct object_cast_helper<custom_object<underlying_to_t, type_to>&>
+{
+    typedef custom_object<underlying_to_t, type_to>& result_type;
+    result_type do_cast(object& o) {
+        if (type_to != o.type)
+            throw error::error("unexpected object type \'", o.type, "\', \'", type_to, "\' was expected");
+        return static_cast<result_type>(o);
+    }
+};
+
+template<typename underlying_to_t, object::object_type type_to>
+struct object_cast_helper<custom_object<underlying_to_t, type_to>*> {
+    typedef custom_object<underlying_to_t, type_to>* result_type;
+    result_type do_cast(object* o) {
+        if (!o)
+            return nullptr;
+        if (type_to != o->type)
+            return nullptr;
+        return static_cast<result_type>(o);
+    }
+};
+
+template<>
+struct object_cast_helper<object*> {
+    typedef object* result_type;
+    result_type do_cast(object* o)
+    { return o; }
+};
+
 }
 
-template<> inline object& object_cast<object>(object& o) { return o; }
-
-template<typename object_t>
-object_t* object_cast(object* o) {
-    if (!o)
-        return nullptr;
-    if (object_t::type_id_type::value != o->type)
-        return nullptr;
-    return static_cast<object_t*>(o);
-}
-
-
+template<typename type_to_t>
+type_to_t object_cast(object* o) { return detail::object_cast_helper<type_to_t>{}.do_cast(o); }
+template<typename type_to_t>
+type_to_t object_cast(object& o) { return detail::object_cast_helper<type_to_t>{}.do_cast(o); }
 
 std::ostream& operator<<(std::ostream& os, const object& obj);
 std::ostream& operator<<(std::ostream& os, const object::object_type& t);
