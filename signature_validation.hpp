@@ -28,22 +28,19 @@ namespace utility {
 
 namespace detail {
 
-template<typename, size_t arg_index>
+template<typename>
 struct arg_handler;
 
-template<typename value_t, lisp_abi::object::object_type type, size_t arg_index>
-struct arg_handler<lisp_abi::custom_object<value_t, type>*, arg_index>
+template<typename value_t, lisp_abi::object::object_type type>
+struct arg_handler<lisp_abi::custom_object<value_t, type>*>
 {
     typedef lisp_abi::custom_object<value_t, type>* result_type;
-    result_type handle(constant_list_view::iterator& it) {
+    result_type operator()(constant_list_view::iterator& it) {
         lisp_abi::object* current_obj = *it;
-        ++it;
         if (!current_obj)
             return nullptr;
         if (current_obj->type != type) {
-            throw error::error("Error while parsing arg ", 
-				arg_index, 
-				": unexpected object type \'", 
+            throw error::error("unexpected object type \'", 
 				current_obj->type, 
 				"\', \'", 
 				type, 
@@ -53,22 +50,17 @@ struct arg_handler<lisp_abi::custom_object<value_t, type>*, arg_index>
     }
 };
 
-template<typename value_t, lisp_abi::object::object_type type, size_t arg_index>
-struct arg_handler<lisp_abi::custom_object<value_t, type>&, arg_index>
+template<typename value_t, lisp_abi::object::object_type type>
+struct arg_handler<lisp_abi::custom_object<value_t, type>&>
 {
     typedef lisp_abi::custom_object<value_t, type>& result_type;
-    result_type handle(constant_list_view::iterator& it) {
+    result_type operator()(constant_list_view::iterator& it) {
         lisp_abi::object* current_obj = *it;
-        ++it;
         if (!current_obj) {
-            throw error::error("Error while parsing arg ",
-                arg_index,
-                ": got nil, non nil was expected");
+            throw error::error("got nil, non nil was expected");
         }
         if (current_obj->type != type) {
-            throw error::error("Error while parsing arg ",
-                arg_index,
-                ": unexpected object type \'",
+            throw error::error("unexpected object type \'",
                 current_obj->type,
                 "\', \'",
                 type,
@@ -78,29 +70,35 @@ struct arg_handler<lisp_abi::custom_object<value_t, type>&, arg_index>
     }
 };
 
-template<size_t arg_index>
-struct arg_handler<lisp_abi::object*, arg_index>
+template<>
+struct arg_handler<lisp_abi::object*>
 {
     typedef lisp_abi::object* result_type;
-    result_type handle(constant_list_view::iterator& it) {
-        lisp_abi::object* current_obj = *it;
-        ++it;
-        return static_cast<result_type>(current_obj);
+    result_type operator()(constant_list_view::iterator& it) {
+        return static_cast<result_type>(*it);
     }
 };
 
-template<typename head_t, typename... tail_t, typename... tuple_args_t>
-std::tuple<tuple_args_t..., head_t, tail_t...> build_arg_list(std::tuple<tuple_args_t...>&& cur_tuple, constant_list_view::iterator& it) {
-    arg_handler<head_t, sizeof...(tuple_args_t) + 1> handler;
-    return build_arg_list<tail_t...>(std::tuple_cat(cur_tuple, std::tuple<head_t>(handler.handle(it))), it);
-}
+template<template<typename> typename functional_t, typename... args_t>
+struct list2tuple;
 
+template<template<typename> typename functional_t, typename head_t, typename... tail_t>
+struct list2tuple<functional_t, head_t, tail_t...> {
+    std::tuple<head_t, tail_t...> convert(constant_list_view::iterator& it) {
+        functional_t<head_t> func;
+        list2tuple<functional_t, tail_t...> next_iteration;
+        std::tuple<head_t, tail_t...> result = std::tuple_cat(std::forward_as_tuple(func(it)), next_iteration.convert(it));
+        ++it;
+        return std::move(result);
+    }
+};
 
-
-template<typename... tuple_args_t>
-std::tuple<tuple_args_t...> build_arg_list(std::tuple<tuple_args_t...>&& cur_tuple, constant_list_view::iterator& it)
-{ return std::move(cur_tuple); }
-
+template<template<typename> typename functional_t>
+struct list2tuple<functional_t> {
+    std::tuple<> convert(constant_list_view::iterator& it) {
+        return std::tuple<>();
+    }
+};
 }
 
 template<typename... args_t>
@@ -115,7 +113,8 @@ std::tuple<args_t...> validate_signature(lisp_abi::pair* list) {
     }
 
     constant_list_view::iterator it = list_view.begin();
-    return detail::build_arg_list<args_t...>(std::forward_as_tuple(), it);
+    detail::list2tuple<detail::arg_handler, args_t...> list2tuple;
+    return list2tuple.convert(it);
 }
 
 }
