@@ -18,10 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 2.7)
 project(yatl)
-
-set (CMAKE_CXX_STANDARD 11)
 
 add_executable(yatl
   src/yatl.cxx
@@ -42,3 +40,7 @@ add_executable(yatl
   src/tokenizer.cxx
   src/tokenizer.hpp
 )
+
+if (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"))
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif()
