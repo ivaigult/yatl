@@ -1,14 +1,11 @@
 language: cpp
-
 compiler:
 - gcc
 os:
 - linux
-
 before_script:
 - mkdir _build
 - cd _build
 - cmake ..
-
 script:
 - cmake --build .
