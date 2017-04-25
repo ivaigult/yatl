@@ -38,7 +38,7 @@ public:
                 const tokenizer::token_stream_t& tokens = _tokenizer.tokenize(line);
                 parser::object_stream_t objects = _parser.parse(tokens);
                 for (lisp_abi::object* o : objects) {
-                    auto result = machine.eval(o);
+                    auto result = m.eval(o);
                     _out << *result << std::endl;
                 }
             }
@@ -50,7 +50,7 @@ public:
         return 0;
     }
 
-    machine       machine;
+    machine       m;
 private:
     std::istream& _in;
     std::ostream& _out;

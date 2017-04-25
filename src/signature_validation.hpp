@@ -40,7 +40,7 @@ struct arg_handler<lisp_abi::custom_object<value_t, type>*>
         if (!current_obj)
             return nullptr;
         if (current_obj->type != type) {
-            throw error::error("unexpected object type \'", 
+            throw error::error().format("unexpected object type \'",
 				current_obj->type, 
 				"\', \'", 
 				type, 
@@ -57,10 +57,10 @@ struct arg_handler<lisp_abi::custom_object<value_t, type>&>
     result_type operator()(constant_list_view::iterator& it) {
         lisp_abi::object* current_obj = *it;
         if (!current_obj) {
-            throw error::error("got nil, non nil was expected");
+            throw error::error().format("got nil, non nil was expected");
         }
         if (current_obj->type != type) {
-            throw error::error("unexpected object type \'",
+            throw error::error().format("unexpected object type \'",
                 current_obj->type,
                 "\', \'",
                 type,
@@ -79,10 +79,10 @@ struct arg_handler<lisp_abi::object*>
     }
 };
 
-template<template<typename> typename functional_t, typename... args_t>
+template<template<typename> class functional_t, typename... args_t>
 struct list2tuple;
 
-template<template<typename> typename functional_t, typename head_t, typename... tail_t>
+template<template<typename> class functional_t, typename head_t, typename... tail_t>
 struct list2tuple<functional_t, head_t, tail_t...> {
     std::tuple<head_t, tail_t...> convert(constant_list_view::iterator& it) {
         functional_t<head_t> func;
@@ -93,7 +93,7 @@ struct list2tuple<functional_t, head_t, tail_t...> {
     }
 };
 
-template<template<typename> typename functional_t>
+template<template<typename> class functional_t>
 struct list2tuple<functional_t> {
     std::tuple<> convert(constant_list_view::iterator& it) {
         return std::tuple<>();
@@ -107,9 +107,9 @@ std::tuple<args_t...> validate_signature(lisp_abi::pair* list) {
     constant_list_view list_view(list);
 
     if (args_required < list_view.size()) {
-        throw error::error("too many arguments: ", args_required, " expected, ", list_view.size(), " provided");
+        throw error::error().format("too many arguments: ", args_required, " expected, ", list_view.size(), " provided");
     } else if (args_required > list_view.size()) {
-        throw error::error("too few arguments: ", args_required, " expected, ", list_view.size(), " provided");
+        throw error::error().format("too few arguments: ", args_required, " expected, ", list_view.size(), " provided");
     }
 
     constant_list_view::iterator it = list_view.begin();

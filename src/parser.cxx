@@ -33,20 +33,20 @@ parser::object_stream_t& parser::parse(const tokenizer::token_stream_t& tokens)
     _object_stream.clear();
     for(const tokenizer::token& token: tokens) {
         if (tokenizer::token_type::left_bracket == token.type) {
-            _list_stack.push(utility::list_view(_repl.machine, nullptr));
+            _list_stack.push(utility::list_view(_repl.m, nullptr));
         } else if (tokenizer::token_type::right_bracket == token.type) {
             if (_list_stack.empty()) {
-                throw error::error("unexpected token \'", token.content, "\'");
+                throw error::error().format("unexpected token \'", token.content, "\'");
             }
             _complete_list();
         } else if (tokenizer::token_type::apostrophe == token.type) {
-            _list_stack.push(utility::list_view(_repl.machine, nullptr));
-            _list_stack.top().push_back(_repl.machine.alloc<lisp_abi::symbol>("quote"));
+            _list_stack.push(utility::list_view(_repl.m, nullptr));
+            _list_stack.top().push_back(_repl.m.alloc<lisp_abi::symbol>("quote"));
             _quote_stack.push(_list_stack.top().front_pair());
         } else {
             lisp_abi::object* new_item = nullptr;
             if (tokenizer::token_type::symbols == token.type)
-                new_item = _repl.machine.alloc<lisp_abi::symbol>(token.content);
+                new_item = _repl.m.alloc<lisp_abi::symbol>(token.content);
             _complete_object(new_item);
         }
     }

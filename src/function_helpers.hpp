@@ -28,38 +28,44 @@
 #include "signature_validation.hpp"
 
 #include <utility>
+#include <functional>
 
 namespace yatl {
 namespace utility {
 
-template<typename function_t, function_t func_ptr>
+template<typename function_t>
 struct simple_function;
 
-template<typename... args_t, lisp_abi::object*(*func_ptr)(machine&, args_t...)>
-struct simple_function<lisp_abi::object* (machine&, args_t...), func_ptr> : public lisp_abi::native_function_type {
-    simple_function(const char* name)
+// @todo: rewrite me for any functor type
+template<typename... args_t>
+struct simple_function<lisp_abi::object* (machine&, args_t...)> : public lisp_abi::native_function_type {
+    simple_function(const char* name, lisp_abi::object* (*callable)(machine&, args_t...))
         : native_function_type(name)
+        , _callable(callable)
     {}
     virtual lisp_abi::object* eval(machine &m, lisp_abi::pair* list) {
         std::tuple<args_t...> lisp_args = utility::validate_signature<args_t...>(list);
         std::tuple<machine&, args_t&&...> args = std::tuple_cat(std::make_tuple(std::ref(m)), lisp_args);
         using namespace yatl::apply_workaround;
-        return std::apply(func_ptr, args);
+        return std::apply(_callable, args);
     }
+
+private:
+    lisp_abi::object* (*_callable)(machine&, args_t...);
 };
 }
 }
 
-#define YATL_EXPORT_FUNCTION(m, func) do {                                               \
-	typedef yatl::utility::simple_function<decltype(func), func> __##func##__t;          \
-	m.assoc(#func,  m.alloc<yatl::lisp_abi::native_function>(new __##func##__t(#func))); \
+#define YATL_EXPORT_FUNCTION(m, func) do {                              \
+        typedef yatl::utility::simple_function<decltype(func)> __##func##__t; \
+        m.assoc(#func,  m.alloc<yatl::lisp_abi::native_function>(new __##func##__t(#func, func))); \
     } while (false)
 
 
 
-#define YATL_EXPORT_NAMED_SYNTAX(m, name, func) do {                                 \
-	typedef yatl::utility::simple_function<decltype(func), func> __##func##__t;      \
-	m.assoc(name,  m.alloc<yatl::lisp_abi::native_syntax>(new __##func##__t(name))); \
+#define YATL_EXPORT_NAMED_SYNTAX(m, name, func) do {                    \
+        typedef yatl::utility::simple_function<decltype(func)> __##func##__t; \
+        m.assoc(name,  m.alloc<yatl::lisp_abi::native_syntax>(new __##func##__t(name, func))); \
     } while (false)
 
 #define YATL_EXPORT_SYNTAX(m, func) YATL_EXPORT_NAMED_SYNTAX(m, #func, func)

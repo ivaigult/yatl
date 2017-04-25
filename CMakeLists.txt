@@ -20,24 +20,26 @@
 
 project(yatl)
 
+cmake_minimum_required(VERSION 3.3)
+
 set (CMAKE_CXX_STANDARD 11)
 
 add_executable(yatl
-  yatl.cxx
-  apply_workaround.hpp
-  error.hpp
-  function_helpers.hpp
-  language_core.cxx
-  lisp_abi.hpp
-  list_view.hpp
-  machine.cxx
-  machine.hpp
-  object_io.cxx
-  parser.cxx
-  parser.hpp
-  repl.cxx
-  repl.hpp
-  signature_validation.hpp
-  tokenizer.cxx
-  tokenizer.hpp
+  src/yatl.cxx
+  src/apply_workaround.hpp
+  src/error.hpp
+  src/function_helpers.hpp
+  src/language_core.cxx
+  src/lisp_abi.hpp
+  src/list_view.hpp
+  src/machine.cxx
+  src/machine.hpp
+  src/object_io.cxx
+  src/parser.cxx
+  src/parser.hpp
+  src/repl.cxx
+  src/repl.hpp
+  src/signature_validation.hpp
+  src/tokenizer.cxx
+  src/tokenizer.hpp
 )
