@@ -1,5 +1,4 @@
 language: cpp
-sudo: required
 compiler:
 - g++-5
 os:
