@@ -35,6 +35,7 @@ namespace utility {
 template<typename function_t, function_t func_ptr>
 struct simple_function;
 
+// @todo: rewrite me for any functor type
 template<typename... args_t, lisp_abi::object*(*func_ptr)(machine&, args_t...)>
 struct simple_function<lisp_abi::object* (machine&, args_t...), func_ptr> : public lisp_abi::native_function_type {
     simple_function(const char* name)
