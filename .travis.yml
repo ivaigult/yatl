@@ -4,6 +4,7 @@ matrix:
   include:
     -env: GCC_VERSION=5
     os: linux
+    compiler: g++-5
     addons:
       apt:
         sources:
@@ -14,6 +15,18 @@ matrix:
     - curl -o cmake-3.8.0-Linux-x86_64.tar.gz https://cmake.org/files/v3.8/cmake-3.8.0-Linux-x86_64.tar.gz
     - tar -xf cmake-3.8.0-Linux-x86_64.tar.gz
     - export PATH="${PWD}/cmake-3.8.0-Linux-x86_64/bin:${PATH}"
+    
+    -env: CLANG_VERSION=3.8
+    os: linux
+    compiler: clang-3.8
+    addons:
+      apt:
+        sources:
+        - llvm-toolchain-precise-3.8
+        packages:
+        - clang-3.8
+    before_install: *cmake380
+    
 before_script:
 - mkdir _build
 - cd _build
