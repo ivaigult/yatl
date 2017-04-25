@@ -39,7 +39,7 @@ const tokenizer::token_stream_t& tokenizer::tokenize(std::string line) {
     // @todo: handle multiline tokens
     // @todo: handle strings
     // @todo: handle comments
-    tokenizer::token current_token;
+    tokenizer::token current_token = {};
     for (char sym : line) {
         if (sym == '(') {
             _emit_token(current_token);
