@@ -34,14 +34,21 @@ namespace yatl {
 namespace utility {
     
 template<typename functor_t>
-struct functor_traits;
+struct functor_traits : public functor_traits<decltype(&functor_t::operator())> {};
 
+template<typename functor_t, typename... args_t>
+struct functor_traits<lisp_abi::object*(functor_t::*)(args_t...)> {
+    typedef std::tuple<args_t...>           lisp_args_type;
+    typedef std::tuple<machine&, args_t...> functor_args_type;
+    typedef functor_t callable_type;
+};
+    
 template<typename... args_t>
 struct functor_traits<lisp_abi::object* (machine&, args_t...)> {
     typedef std::tuple<args_t...>           lisp_args_type;
     typedef std::tuple<machine&, args_t...> functor_args_type;
     typedef lisp_abi::object* (*callable_type)(machine&, args_t...);
-};
+};    
     
 template<typename functor_t>
 struct simple_function : public lisp_abi::native_function_type {
