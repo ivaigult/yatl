@@ -57,7 +57,12 @@ public:
         iterator&    operator=(const iterator& it) { _node = it._node; return *this; }
         bool         operator==(const iterator& it) const { return _node == it._node; }
         bool         operator!=(const iterator& it) const { return _node != it._node; }
-        iterator&    operator++() { _node = static_cast<lisp_abi::pair*>(_node->value.tail); return *this; }
+        iterator&    operator++()    { _node = static_cast<lisp_abi::pair*>(_node->value.tail); return *this; }
+        iterator     operator++(int) {
+            lisp_abi::pair* prev_node = _node;
+            _node = static_cast<lisp_abi::pair*>(_node->value.tail);
+            return prev_node;
+        }
         value_type   operator*() const { return _node->value.head; }
     private:
         lisp_abi::pair* _node;
