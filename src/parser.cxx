@@ -36,7 +36,7 @@ parser::object_stream_t& parser::parse(const tokenizer::token_stream_t& tokens)
             _list_stack.push(utility::list_view(_repl.machine, nullptr));
         } else if (tokenizer::token_type::right_bracket == token.type) {
             if (_list_stack.empty()) {
-                throw error::error("unexpected token \'", token.content, "\'");
+                throw error::error().format("unexpected token \'", token.content, "\'");
             }
             _complete_list();
         } else if (tokenizer::token_type::apostrophe == token.type) {

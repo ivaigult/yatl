@@ -40,7 +40,7 @@ struct arg_handler<lisp_abi::custom_object<value_t, type>*>
         if (!current_obj)
             return nullptr;
         if (current_obj->type != type) {
-            throw error::error("unexpected object type \'", 
+            throw error::error().format("unexpected object type \'",
 				current_obj->type, 
 				"\', \'", 
 				type, 
@@ -57,10 +57,10 @@ struct arg_handler<lisp_abi::custom_object<value_t, type>&>
     result_type operator()(constant_list_view::iterator& it) {
         lisp_abi::object* current_obj = *it;
         if (!current_obj) {
-            throw error::error("got nil, non nil was expected");
+            throw error::error().format("got nil, non nil was expected");
         }
         if (current_obj->type != type) {
-            throw error::error("unexpected object type \'",
+            throw error::error().format("unexpected object type \'",
                 current_obj->type,
                 "\', \'",
                 type,
@@ -107,9 +107,9 @@ std::tuple<args_t...> validate_signature(lisp_abi::pair* list) {
     constant_list_view list_view(list);
 
     if (args_required < list_view.size()) {
-        throw error::error("too many arguments: ", args_required, " expected, ", list_view.size(), " provided");
+        throw error::error().format("too many arguments: ", args_required, " expected, ", list_view.size(), " provided");
     } else if (args_required > list_view.size()) {
-        throw error::error("too few arguments: ", args_required, " expected, ", list_view.size(), " provided");
+        throw error::error().format("too few arguments: ", args_required, " expected, ", list_view.size(), " provided");
     }
 
     constant_list_view::iterator it = list_view.begin();

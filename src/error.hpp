@@ -27,6 +27,7 @@
 
 namespace yatl {
 namespace error {
+struct error;
 namespace detail {
 template<typename head_t, typename... tail_t>
 void print(std::ostream& o, head_t&& head, tail_t&&... tail);
@@ -41,17 +42,21 @@ void print(std::ostream& o, head_t&& head, tail_t&&... tail)
 }
 
 struct error : std::exception {
+
     template<typename... args_t>
-    error(args_t&&... args)
+    error& format(args_t&&... args)
     {
         std::stringstream message_stream;
         detail::print(message_stream, std::forward<args_t>(args)...);
         _message = message_stream.str();
+        return *this;
     }
 
-    virtual const char* what() { return _message.c_str(); }
+    virtual ~error() throw() {}
+    virtual const char* what() const { return _message.c_str(); }
 protected:
     std::string    _message;
 };
+
 }
 }

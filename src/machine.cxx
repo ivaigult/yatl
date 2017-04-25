@@ -45,7 +45,7 @@ lisp_abi::object* machine::eval(lisp_abi::object* object) {
         lisp_abi::symbol* sym = static_cast<lisp_abi::symbol*>(object);
         std::map<std::string, lisp_abi::object*>::iterator found = _assoc.find(sym->value);
         if (found == _assoc.end())
-            throw error::error("symbol \'", sym->value, "\' is unbound");
+            throw error::error().format("symbol \'", sym->value, "\' is unbound");
         return found->second;
     }
     break;
@@ -73,7 +73,7 @@ lisp_abi::object* machine::eval(lisp_abi::object* object) {
                 return callable->value->eval(*this, tail_obj);
             } else {
                 // @todo: evaluated_head might be null
-                throw error::error("unable to call ", evaluated_head->type);
+                throw error::error().format("unable to call ", evaluated_head->type);
             }
         }
     }
