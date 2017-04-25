@@ -79,10 +79,10 @@ struct arg_handler<lisp_abi::object*>
     }
 };
 
-template<template<typename> typename functional_t, typename... args_t>
+template<template<typename> class functional_t, typename... args_t>
 struct list2tuple;
 
-template<template<typename> typename functional_t, typename head_t, typename... tail_t>
+template<template<typename> class functional_t, typename head_t, typename... tail_t>
 struct list2tuple<functional_t, head_t, tail_t...> {
     std::tuple<head_t, tail_t...> convert(constant_list_view::iterator& it) {
         functional_t<head_t> func;
@@ -93,7 +93,7 @@ struct list2tuple<functional_t, head_t, tail_t...> {
     }
 };
 
-template<template<typename> typename functional_t>
+template<template<typename> class functional_t>
 struct list2tuple<functional_t> {
     std::tuple<> convert(constant_list_view::iterator& it) {
         return std::tuple<>();
