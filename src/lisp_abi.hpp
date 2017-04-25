@@ -107,7 +107,7 @@ struct object_cast_helper<custom_object<underlying_to_t, type_to>&>
     typedef custom_object<underlying_to_t, type_to>& result_type;
     result_type do_cast(object& o) {
         if (type_to != o.type)
-            throw error::error("unexpected object type \'", o.type, "\', \'", type_to, "\' was expected");
+            throw error::error().format("unexpected object type \'", o.type, "\', \'", type_to, "\' was expected");
         return static_cast<result_type>(o);
     }
 };
