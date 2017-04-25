@@ -16,15 +16,15 @@ matrix:
     - tar -xf cmake-3.8.0-Linux-x86_64.tar.gz
     - export PATH="${PWD}/cmake-3.8.0-Linux-x86_64/bin:${PATH}"
     
-    -env: CLANG_VERSION=3.8
+    -env: CLANG_VERSION=3.6
     os: linux
-    compiler: clang-3.8
+    compiler: clang-3.6
     addons:
       apt:
         sources:
-        - llvm-toolchain-precise-3.8
+        - llvm-toolchain-precise-3.6
         packages:
-        - clang-3.8
+        - clang-3.6
     before_install: *cmake380
     
 before_script:
