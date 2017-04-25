@@ -53,7 +53,7 @@ struct error : std::exception {
     }
 
     virtual ~error() throw() {}
-    virtual const char* what() const { return _message.c_str(); }
+    virtual const char* what() const throw() { return _message.c_str(); }
 protected:
     std::string    _message;
 };
