@@ -23,6 +23,7 @@
 #include "error.hpp"
 
 #include <cctype>
+#include <cassert>
 
 namespace yatl {
 
@@ -56,7 +57,25 @@ const tokenizer::token_stream_t& tokenizer::tokenize(std::string line) {
             _emit_token(current_token);
             continue;
         }
-        current_token.type = tokenizer::token_type::symbols;
+
+        if (tokenizer::token_type::unknown == current_token.type) {
+            assert(current_token.content.empty());
+            if (std::isdigit(sym) || sym == '-') {
+                current_token.type = tokenizer::token_type::number;
+                current_token.content += sym;
+                continue;
+            } else {
+                current_token.type = tokenizer::token_type::symbols;
+            }
+        }
+
+        if (tokenizer::token_type::number == current_token.type) {
+            if (!((sym == '.' && std::string::npos ==  current_token.content.find('.'))
+                  || std::isdigit(sym))) {
+                throw error::error().format("Invalid token ", current_token.content);
+            }
+        }
+        
         current_token.content += sym;
     }
     _emit_token(current_token);
