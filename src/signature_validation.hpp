@@ -35,7 +35,7 @@ template<typename value_t, lisp_abi::object::object_type type>
 struct arg_handler<lisp_abi::custom_object<value_t, type>*>
 {
     typedef lisp_abi::custom_object<value_t, type>* result_type;
-    result_type operator()(constant_list_view::iterator& it) {
+    result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator) {
         lisp_abi::object* current_obj = *it++;
         if (!current_obj)
             return nullptr;
@@ -54,7 +54,7 @@ template<typename value_t, lisp_abi::object::object_type type>
 struct arg_handler<lisp_abi::custom_object<value_t, type>&>
 {
     typedef lisp_abi::custom_object<value_t, type>& result_type;
-    result_type operator()(constant_list_view::iterator& it) {
+    result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator) {
         lisp_abi::object* current_obj = *it++;
         if (!current_obj) {
             throw error::error().format("got nil, non nil was expected");
@@ -74,7 +74,7 @@ template<>
 struct arg_handler<lisp_abi::object*>
 {
     typedef lisp_abi::object* result_type;
-    result_type operator()(constant_list_view::iterator& it) const {
+    result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator) const {
         return static_cast<result_type>(*it++);
     }
 };
@@ -83,10 +83,10 @@ template<typename element_t>
 struct arg_handler<std::vector<element_t> >
 {
     typedef std::vector<element_t> result_type;
-    result_type operator()(constant_list_view::iterator& it) const {
+    result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator end) const {
         result_type result;
-        for( ; it; ++it) {
-            result.push_back(lisp_abi::object_cast<element_t>(*it++));
+        for( ; it != end; ++it) {
+            result.push_back(lisp_abi::object_cast<element_t&>(**it));
         }
         return std::move(result);
     }
@@ -98,16 +98,16 @@ struct list2tuple;
 
 template<template<typename> class functional_t, typename head_t, typename... tail_t>
 struct list2tuple<functional_t, head_t, tail_t...> {
-    std::tuple<head_t, tail_t...> convert(constant_list_view::iterator& it) {
+    std::tuple<head_t, tail_t...> convert(constant_list_view::iterator begin, constant_list_view::iterator end) {
         functional_t<head_t> func;
         list2tuple<functional_t, tail_t...> next_iteration;
-        return std::tuple_cat(std::forward_as_tuple(func(it)), next_iteration.convert(it));
+        return std::tuple_cat(std::forward_as_tuple(func(begin, end)), next_iteration.convert(begin, end));
     }
 };
 
 template<template<typename> class functional_t>
 struct list2tuple<functional_t> {
-    std::tuple<> convert(constant_list_view::iterator& it) {
+    std::tuple<> convert(constant_list_view::iterator, constant_list_view::iterator) {
         return std::tuple<>();
     }
 };
@@ -116,19 +116,13 @@ struct list2tuple<functional_t> {
 template<typename tuple_t>
 struct validate_signature;
 
-template<typename element_t, typename... args_t>
-struct validate_signature<std::tuple<args_t..., std::vector<element_t> > > {
-    std::tuple<args_t...> validate(lisp_abi::pair* list) {
-        size_t args_required = sizeof...(args_t) - 1;
+template<typename element_t>
+struct validate_signature<std::tuple<std::vector<element_t> > > {
+    std::tuple<std::vector<element_t> > validate(lisp_abi::pair* list) {
         constant_list_view list_view(list);
-
-        if (args_required > list_view.size()) {
-            throw error::error().format("too few arguments: ", args_required, " expected, ", list_view.size(), " provided");
-        }
         
-        constant_list_view::iterator it = list_view.begin();
-        detail::list2tuple<detail::arg_handler, args_t...> list2tuple;
-        return list2tuple.convert(it);
+        detail::list2tuple<detail::arg_handler, std::vector<element_t> > list2tuple;
+        return list2tuple.convert(list_view.begin(), list_view.end());
     }    
 };
     
@@ -144,9 +138,8 @@ struct validate_signature<std::tuple<args_t...> > {
             throw error::error().format("too few arguments: ", args_required, " expected, ", list_view.size(), " provided");
         }
 
-        constant_list_view::iterator it = list_view.begin();
         detail::list2tuple<detail::arg_handler, args_t...> list2tuple;
-        return list2tuple.convert(it);
+        return list2tuple.convert(list_view.begin(), list_view.end());
     }
 };
 }

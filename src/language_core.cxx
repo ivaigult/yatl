@@ -22,6 +22,8 @@
 #include "function_helpers.hpp"
 #include "machine.hpp"
 
+#include <algorithm>
+
 namespace yatl {
 namespace language_core {
 
@@ -44,12 +46,20 @@ lisp_abi::object* cons(machine &m, lisp_abi::object* obj, lisp_abi::pair* list) 
     return list_view.front_pair();
 }
 
+lisp_abi::object* add(machine &m, std::vector<lisp_abi::number> numbers) {
+    lisp_abi::number* result = m.alloc<lisp_abi::number>(0.0);
+    std::for_each(numbers.begin(), numbers.end(), [&result](const lisp_abi::number& n) { result->value += n.value; });
+    return result;
+}        
+
 lisp_abi::object* print(machine& m, lisp_abi::pair* obj)   { std::cout << *obj << std::endl; return obj; }
 lisp_abi::object* quit(machine &m)                         { exit(EXIT_SUCCESS); }
 
 void init_language_core(machine& m) {
     YATL_EXPORT_SYNTAX(m, quote);
     YATL_EXPORT_NAMED_SYNTAX(m, "if", _if);
+    
+    YATL_EXPORT_FUNCTION(m, add);
     
     YATL_EXPORT_FUNCTION(m, eval);
     YATL_EXPORT_FUNCTION(m, car);

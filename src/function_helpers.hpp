@@ -46,7 +46,7 @@ struct simple_function<lisp_abi::object* (machine&, args_t...)> : public lisp_ab
     virtual lisp_abi::object* eval(machine &m, lisp_abi::pair* list) {
         typedef std::tuple<args_t...> lisp_args_t;
         lisp_args_t lisp_args = utility::validate_signature<lisp_args_t>().validate(list);
-        std::tuple<machine&, args_t&&...> args = std::tuple_cat(std::make_tuple(std::ref(m)), lisp_args);
+        std::tuple<machine&, args_t...> args = std::tuple_cat(std::make_tuple(std::ref(m)), std::move(lisp_args));
         using namespace yatl::apply_workaround;
         return std::apply(_callable, args);
     }
