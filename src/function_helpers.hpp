@@ -32,28 +32,37 @@
 
 namespace yatl {
 namespace utility {
+    
+template<typename functor_t>
+struct functor_traits;
 
-template<typename function_t>
-struct simple_function;
-
-// @todo: rewrite me for any functor type
 template<typename... args_t>
-struct simple_function<lisp_abi::object* (machine&, args_t...)> : public lisp_abi::native_function_type {
-    simple_function(const char* name, lisp_abi::object* (*callable)(machine&, args_t...))
+struct functor_traits<lisp_abi::object* (machine&, args_t...)> {
+    typedef std::tuple<args_t...>           lisp_args_type;
+    typedef std::tuple<machine&, args_t...> functor_args_type;
+    typedef lisp_abi::object* (*callable_type)(machine&, args_t...);
+};
+    
+template<typename functor_t>
+struct simple_function : public lisp_abi::native_function_type {
+    typedef typename functor_traits<functor_t>::callable_type     callable_type;
+    
+    simple_function(const char* name, callable_type callable)
         : native_function_type(name)
         , _callable(callable)
     {}
     virtual lisp_abi::object* eval(machine &m, lisp_abi::pair* list) {
-        typedef std::tuple<args_t...> lisp_args_t;
-        lisp_args_t lisp_args = utility::validate_signature<lisp_args_t>().validate(list);
-        std::tuple<machine&, args_t...> args = std::tuple_cat(std::make_tuple(std::ref(m)), std::move(lisp_args));
+        lisp_args_type lisp_args = utility::validate_signature<lisp_args_type>().validate(list);
+        functor_args_type args = std::tuple_cat(std::make_tuple(std::ref(m)), std::move(lisp_args));
         using namespace yatl::apply_workaround;
         return std::apply(_callable, args);
     }
-
 private:
-    lisp_abi::object* (*_callable)(machine&, args_t...);
+    typedef typename functor_traits<functor_t>::lisp_args_type    lisp_args_type;
+    typedef typename functor_traits<functor_t>::functor_args_type functor_args_type;
+    callable_type _callable;
 };
+    
 }
 }
 
