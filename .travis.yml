@@ -26,7 +26,7 @@ matrix:
         - llvm-toolchain-precise-3.8
         packages:
         - clang-3.8
-      before_install: *cmake380
+    before_install: *cmake380
 before_script:
 - mkdir _build
 - cd _build
