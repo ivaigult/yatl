@@ -27,13 +27,6 @@
 
 namespace yatl {
 namespace language_core {
-
-    
-lisp_abi::object* add(machine &m, std::vector<lisp_abi::number> numbers) {
-    lisp_abi::number* result = m.alloc<lisp_abi::number>(0.0);
-    std::for_each(numbers.begin(), numbers.end(), [&result](const lisp_abi::number& n) { result->value += n.value; });
-    return result;
-}        
    
 void init_language_core(machine& m) {
     utility::bind_syntax(m,   "quote",[&m](lisp_abi::object* o) { return o; } );
@@ -47,29 +40,28 @@ void init_language_core(machine& m) {
         list_view.push_front(o);
         return list_view.front_pair();
     });
-
     utility::bind_function(m, "+",     [&m](std::vector<lisp_abi::number> numbers) {
-        lisp_abi::number* result = m.alloc<lisp_abi::number>(0.0);
+        lisp_abi::number* result = m.alloc<lisp_abi::number>(0.0f);
         std::for_each(numbers.begin(), numbers.end(), [&result](const lisp_abi::number& n) { result->value += n.value; });
         return result;
     });
     utility::bind_function(m, "-",     [&m](std::vector<lisp_abi::number> numbers) {
-        lisp_abi::number* result = m.alloc<lisp_abi::number>(0.0);
+        lisp_abi::number* result = m.alloc<lisp_abi::number>(0.0f);
         assert(result);
         std::for_each(numbers.begin(), numbers.end(), [&result](const lisp_abi::number& n) { result->value -= n.value; });
         return result;
     });
     utility::bind_function(m, "*",     [&m](std::vector<lisp_abi::number> numbers) {
-        lisp_abi::number* result = m.alloc<lisp_abi::number>(1.0);
+        lisp_abi::number* result = m.alloc<lisp_abi::number>(1.0f);
         std::for_each(numbers.begin(), numbers.end(), [&result](const lisp_abi::number& n) { result->value *= n.value; });
         return result;
     });
     utility::bind_function(m, "/",     [&m](std::vector<lisp_abi::number> numbers) {
-        lisp_abi::number* result = m.alloc<lisp_abi::number>(1.0);
+        lisp_abi::number* result = m.alloc<lisp_abi::number>(1.0f);
         if (numbers.empty()) {
             return result;
         } else if (1 == numbers.size()) {
-            result->value = 1.0 / numbers.front().value;
+            result->value = 1.0f / numbers.front().value;
             return result;
         }
         result->value = numbers.front().value;
@@ -79,11 +71,6 @@ void init_language_core(machine& m) {
     
     utility::bind_function(m, "print", [&m](lisp_abi::object* o){ std::cout << *o << std::endl; return o; });
     utility::bind_function(m, "quit",  [&m]() -> lisp_abi::object* { exit(EXIT_SUCCESS); return nullptr; });
-    // YATL_EXPORT_FUNCTION(m, add);
-    // 
-
-    // YATL_EXPORT_FUNCTION(m, cons);
-    // YATL_EXPORT_FUNCTION(m, print);
 }
 
 }

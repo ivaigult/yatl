@@ -53,6 +53,9 @@ struct value_holder {
         : value(std::forward<args_t>(args)...)
     {}
 
+    operator value_type_t&() { return value;  }
+    operator const value_type_t& () const { return value; }
+
     typedef value_type_t value_type;
     value_type value;
 };
