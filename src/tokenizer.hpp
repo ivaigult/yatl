@@ -29,10 +29,12 @@ class repl;
 class tokenizer {
 public:
     enum class token_type {
+        unknown,
         symbols,
         apostrophe,
         left_bracket,
         right_bracket,
+        number,
     };
     
     struct token {

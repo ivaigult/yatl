@@ -86,10 +86,10 @@ typedef custom_object<float,                 object::object_type::number>       
 typedef custom_object<pair_type,             object::object_type::pair>            pair;
 
 struct native_function_type {
-    native_function_type(const char* name) : name(name) {}
+    native_function_type(std::string name) : name(name) {}
     virtual ~native_function_type() {}
-    virtual lisp_abi::object* eval(machine &m, lisp_abi::pair* obj) = 0;
-    const char* name;
+    virtual lisp_abi::object* eval(lisp_abi::pair* obj) = 0;
+    const std::string name;
 };
 
 typedef custom_object<native_function_type*, object::object_type::native_function> native_function;

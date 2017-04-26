@@ -26,33 +26,41 @@
 #include "list_view.hpp"
 #include "apply_workaround.hpp"
 #include "signature_validation.hpp"
+#include "functor_traits.hpp"
 
 #include <utility>
 #include <functional>
 
 namespace yatl {
 namespace utility {
-
-template<typename function_t>
-struct simple_function;
-
-// @todo: rewrite me for any functor type
-template<typename... args_t>
-struct simple_function<lisp_abi::object* (machine&, args_t...)> : public lisp_abi::native_function_type {
-    simple_function(const char* name, lisp_abi::object* (*callable)(machine&, args_t...))
+    
+    
+template<typename functor_t>
+struct simple_function : public lisp_abi::native_function_type {
+    typedef typename functor_traits<functor_t>::callable_type callable_type;
+    typedef typename functor_traits<functor_t>::args_type args_type;
+    
+    simple_function(std::string name, callable_type callable)
         : native_function_type(name)
         , _callable(callable)
     {}
-    virtual lisp_abi::object* eval(machine &m, lisp_abi::pair* list) {
-        std::tuple<args_t...> lisp_args = utility::validate_signature<args_t...>(list);
-        std::tuple<machine&, args_t&&...> args = std::tuple_cat(std::make_tuple(std::ref(m)), lisp_args);
+    virtual lisp_abi::object* eval(lisp_abi::pair* list) {
+        args_type args = utility::validate_signature<args_type>().validate(list);
         using namespace yatl::apply_workaround;
         return std::apply(_callable, args);
-    }
-
-private:
-    lisp_abi::object* (*_callable)(machine&, args_t...);
+    }    
+private:    
+    callable_type _callable;
 };
+
+template<typename functor_t>
+void bind_function(machine& m, std::string name, functor_t functor)
+{ m.assoc(name, m.alloc<yatl::lisp_abi::native_function>(new simple_function<functor_t>(name, functor))); }
+
+template<typename functor_t>
+void bind_syntax(machine& m, std::string name, functor_t functor)
+{ m.assoc(name, m.alloc<yatl::lisp_abi::native_syntax>(new simple_function<functor_t>(name, functor))); }
+    
 }
 }
 
