@@ -23,6 +23,7 @@
 #include "machine.hpp"
 
 #include <algorithm>
+#include <cassert>
 
 namespace yatl {
 namespace language_core {
@@ -33,11 +34,10 @@ lisp_abi::object* add(machine &m, std::vector<lisp_abi::number> numbers) {
     std::for_each(numbers.begin(), numbers.end(), [&result](const lisp_abi::number& n) { result->value += n.value; });
     return result;
 }        
-
-
+   
 void init_language_core(machine& m) {
-    utility::bind_syntax(m, "quote",  [&m](lisp_abi::object* o) { return o; } );
-    utility::bind_syntax(m, "if",     [&m](lisp_abi::object* o, lisp_abi::object* l, lisp_abi::object* r) { return m.eval(o)? m.eval(l) : m.eval(r); });
+    utility::bind_syntax(m,   "quote",[&m](lisp_abi::object* o) { return o; } );
+    utility::bind_syntax(m,   "if",   [&m](lisp_abi::object* o, lisp_abi::object* l, lisp_abi::object* r) { return m.eval(o)? m.eval(l) : m.eval(r); });
 
     utility::bind_function(m, "eval", [&m](lisp_abi::object* o) { return m.eval(o); });
     utility::bind_function(m, "car",  [&m](lisp_abi::pair&   l) { return l.value.head; });
@@ -46,6 +46,35 @@ void init_language_core(machine& m) {
         utility::list_view list_view(m, l);
         list_view.push_front(o);
         return list_view.front_pair();
+    });
+
+    utility::bind_function(m, "+",     [&m](std::vector<lisp_abi::number> numbers) {
+        lisp_abi::number* result = m.alloc<lisp_abi::number>(0.0);
+        std::for_each(numbers.begin(), numbers.end(), [&result](const lisp_abi::number& n) { result->value += n.value; });
+        return result;
+    });
+    utility::bind_function(m, "-",     [&m](std::vector<lisp_abi::number> numbers) {
+        lisp_abi::number* result = m.alloc<lisp_abi::number>(0.0);
+        assert(result);
+        std::for_each(numbers.begin(), numbers.end(), [&result](const lisp_abi::number& n) { result->value -= n.value; });
+        return result;
+    });
+    utility::bind_function(m, "*",     [&m](std::vector<lisp_abi::number> numbers) {
+        lisp_abi::number* result = m.alloc<lisp_abi::number>(1.0);
+        std::for_each(numbers.begin(), numbers.end(), [&result](const lisp_abi::number& n) { result->value *= n.value; });
+        return result;
+    });
+    utility::bind_function(m, "/",     [&m](std::vector<lisp_abi::number> numbers) {
+        lisp_abi::number* result = m.alloc<lisp_abi::number>(1.0);
+        if (numbers.empty()) {
+            return result;
+        } else if (1 == numbers.size()) {
+            result->value = 1.0 / numbers.front().value;
+            return result;
+        }
+        result->value = numbers.front().value;
+        std::for_each(numbers.begin() + 1, numbers.end(), [&result](const lisp_abi::number& n) { result->value /= n.value; });
+        return result;
     });
     
     utility::bind_function(m, "print", [&m](lisp_abi::object* o){ std::cout << *o << std::endl; return o; });
