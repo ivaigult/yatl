@@ -68,9 +68,9 @@ lisp_abi::object* machine::eval(lisp_abi::object* object) {
                 for (; it != list_view.end(); ++it) {
                     arguments_list.push_back(eval(*it));
                 }
-                return callable->value->eval(*this, arguments_list.front_pair());
+                return callable->value->eval(arguments_list.front_pair());
             } else if(lisp_abi::native_syntax* callable = lisp_abi::object_cast<lisp_abi::native_syntax*>(evaluated_head)) {
-                return callable->value->eval(*this, tail_obj);
+                return callable->value->eval(tail_obj);
             } else {
                 // @todo: evaluated_head might be null
                 throw error::error().format("unable to call ", evaluated_head->type);
