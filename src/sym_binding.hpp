@@ -19,6 +19,8 @@
 * THE SOFTWARE.
 */
 
+#pragma once
+
 #include "lisp_abi.hpp"
 
 #include <map>

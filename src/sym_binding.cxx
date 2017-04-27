@@ -21,6 +21,7 @@
 
 #include "sym_binding.hpp"
 #include "error.hpp"
+#include "function_helpers.hpp"
 
 #include <cassert>
 

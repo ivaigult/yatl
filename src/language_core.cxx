@@ -29,6 +29,17 @@ namespace yatl {
 namespace language_core {
    
 void init_language_core(machine& m) {
+    utility::bind_syntax(m, "define", [&m](lisp_abi::symbol& s, lisp_abi::object* o) { 
+        lisp_abi::object* result = m.eval(o);
+        m.bindings.define(s.value, result); 
+        return result;
+    });
+    utility::bind_syntax(m, "set!",   [&m](lisp_abi::symbol& s, lisp_abi::object* o) {
+        lisp_abi::object* result = m.eval(o);
+        m.bindings.define(s.value, result);
+        return result;
+    });;
+
     utility::bind_syntax(m,   "quote",[&m](lisp_abi::object* o) { return o; } );
     utility::bind_syntax(m,   "if",   [&m](lisp_abi::object* o, lisp_abi::object* l, lisp_abi::object* r) { return m.eval(o)? m.eval(l) : m.eval(r); });
 
@@ -68,7 +79,7 @@ void init_language_core(machine& m) {
         std::for_each(numbers.begin() + 1, numbers.end(), [&result](const lisp_abi::number& n) { result->value /= n.value; });
         return result;
     });
-    
+
     utility::bind_function(m, "print", [&m](lisp_abi::object* o){ std::cout << *o << std::endl; return o; });
     utility::bind_function(m, "quit",  [&m]() -> lisp_abi::object* { exit(EXIT_SUCCESS); return nullptr; });
 }
