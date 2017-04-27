@@ -28,7 +28,7 @@
 namespace yatl {
 symbol_space::symbol_space() 
 { 
-    _bindings_stack.push_back({ scope_bindings::scope_type::global });
+    _bindings_stack.push_back(scope_bindings::scope_type::global);
 }
 
 lisp_abi::object* symbol_space::lookup(const std::string& name) const {
