@@ -33,7 +33,6 @@
 
 namespace yatl {
 namespace utility {
-    
 template<typename functor_t>
 struct simple_function : public lisp_abi::native_function_type {
     typedef typename functor_traits<functor_t>::callable_type callable_type;

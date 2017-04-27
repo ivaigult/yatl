@@ -25,7 +25,10 @@
 
 namespace yatl {
 namespace utility {
-
+template<typename rest_t>
+struct rest_arguments {
+    rest_t args;
+};
 namespace detail {
 
 template<typename>
@@ -79,19 +82,31 @@ struct arg_handler<lisp_abi::object*>
     }
 };
 
-template<typename element_t>
-struct arg_handler<std::vector<element_t> >
+// @todo: enalbe_if only if container_t is actualy libstdcxx like container (check push_back method)
+template<template<typename, typename> class container_t, template<typename> class alloc_t, typename element_t>
+struct arg_handler<rest_arguments<container_t<element_t, alloc_t<element_t> > > >
 {
-    typedef std::vector<element_t> result_type;
+    typedef container_t<element_t, alloc_t<element_t> > container_type;
+    typedef rest_arguments<container_type> result_type;
     result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator end) const {
         result_type result;
-        for( ; it != end; ++it) {
-            result.push_back(lisp_abi::object_cast<element_t&>(**it));
+        for (; it != end; ++it) {
+            result.args.push_back(lisp_abi::object_cast<element_t&>(**it));
         }
         return std::move(result);
     }
 };
 
+template<>
+struct arg_handler<rest_arguments<lisp_abi::pair*> >
+{
+    typedef rest_arguments<lisp_abi::pair*> result_type;
+    result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator end) const {
+        result_type result;
+        result.args = lisp_abi::object_cast<lisp_abi::pair*>(*it);
+        return std::move(result);
+    }
+};
 
 template<template<typename> class functional_t, typename... args_t>
 struct list2tuple;
@@ -118,11 +133,11 @@ template<typename tuple_t>
 struct validate_signature;
 
 template<typename element_t>
-struct validate_signature<std::tuple<std::vector<element_t> > > {
-    std::tuple<std::vector<element_t> > validate(lisp_abi::pair* list) {
+struct validate_signature<std::tuple<rest_arguments<element_t> > > {
+    std::tuple<rest_arguments<element_t> > validate(lisp_abi::pair* list) {
         constant_list_view list_view(list);
         
-        detail::list2tuple<detail::arg_handler, std::vector<element_t> > list2tuple;
+        detail::list2tuple<detail::arg_handler, rest_arguments<element_t> > list2tuple;
         return list2tuple.convert(list_view.begin(), list_view.end());
     }    
 };
