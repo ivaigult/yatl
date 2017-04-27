@@ -35,7 +35,7 @@ template<typename value_t, lisp_abi::object::object_type type>
 struct arg_handler<lisp_abi::custom_object<value_t, type>*>
 {
     typedef lisp_abi::custom_object<value_t, type>* result_type;
-    result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator) {
+    result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator) const {
         lisp_abi::object* current_obj = *it++;
         if (!current_obj)
             return nullptr;
@@ -54,7 +54,7 @@ template<typename value_t, lisp_abi::object::object_type type>
 struct arg_handler<lisp_abi::custom_object<value_t, type>&>
 {
     typedef lisp_abi::custom_object<value_t, type>& result_type;
-    result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator) {
+    result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator) const {
         lisp_abi::object* current_obj = *it++;
         if (!current_obj) {
             throw error::error().format("got nil, non nil was expected");
@@ -99,9 +99,10 @@ struct list2tuple;
 template<template<typename> class functional_t, typename head_t, typename... tail_t>
 struct list2tuple<functional_t, head_t, tail_t...> {
     std::tuple<head_t, tail_t...> convert(constant_list_view::iterator begin, constant_list_view::iterator end) {
-        functional_t<head_t> func;
+        const functional_t<head_t> func = {};
+        typename functional_t<head_t>::result_type this_iteration = func(begin, end);
         list2tuple<functional_t, tail_t...> next_iteration;
-        return std::tuple_cat(std::forward_as_tuple(func(begin, end)), next_iteration.convert(begin, end));
+        return std::tuple_cat(std::forward_as_tuple(this_iteration), next_iteration.convert(begin, end));
     }
 };
 
