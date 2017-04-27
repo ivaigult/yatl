@@ -99,7 +99,7 @@ struct list2tuple;
 template<template<typename> class functional_t, typename head_t, typename... tail_t>
 struct list2tuple<functional_t, head_t, tail_t...> {
     std::tuple<head_t, tail_t...> convert(constant_list_view::iterator begin, constant_list_view::iterator end) {
-        const functional_t<head_t> func;
+        const functional_t<head_t> func = {};
         typename functional_t<head_t>::result_type this_iteration = func(begin, end);
         list2tuple<functional_t, tail_t...> next_iteration;
         return std::tuple_cat(std::forward_as_tuple(this_iteration), next_iteration.convert(begin, end));
