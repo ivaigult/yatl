@@ -55,11 +55,11 @@ private:
 
 template<typename functor_t>
 void bind_function(machine& m, std::string name, functor_t functor)
-{ m.assoc(name, m.alloc<yatl::lisp_abi::native_function>(new simple_function<functor_t>(name, functor))); }
+{ m.bindings.define(name, m.alloc<yatl::lisp_abi::native_function>(new simple_function<functor_t>(name, functor))); }
 
 template<typename functor_t>
 void bind_syntax(machine& m, std::string name, functor_t functor)
-{ m.assoc(name, m.alloc<yatl::lisp_abi::native_syntax>(new simple_function<functor_t>(name, functor))); }
+{ m.bindings.define(name, m.alloc<yatl::lisp_abi::native_syntax>(new simple_function<functor_t>(name, functor))); }
     
 }
 }
