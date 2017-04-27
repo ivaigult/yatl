@@ -40,6 +40,8 @@ add_executable(yatl
   src/repl.cxx
   src/repl.hpp
   src/signature_validation.hpp
+  src/sym_binding.cxx
+  src/sym_binding.hpp
   src/tokenizer.cxx
   src/tokenizer.hpp
 )
