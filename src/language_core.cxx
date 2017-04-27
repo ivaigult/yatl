@@ -58,7 +58,6 @@ void init_language_core(machine& m) {
     });
     utility::bind_function(m, "-",     [&m](utility::rest_arguments<std::vector<lisp_abi::number> > numbers) {
         lisp_abi::number* result = m.alloc<lisp_abi::number>(0.0f);
-        assert(result);
         std::for_each(numbers.args.begin(), numbers.args.end(), [&result](const lisp_abi::number& n) { result->value -= n.value; });
         return result;
     });
