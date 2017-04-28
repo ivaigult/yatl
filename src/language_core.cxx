@@ -42,10 +42,10 @@ void init_language_core(machine& m) {
     utility::bind_syntax(m, "let", [&m](lisp_abi::pair& vars, utility::rest_arguments<lisp_abi::pair*> body) {
         utility::constant_list_view vars_list(&vars);
         scope_bindings scope = { scope_bindings::scope_type::let };
-        for (lisp_abi::object* var_val : vars_list) {
-            lisp_abi::pair*   var_val_pair = lisp_abi::object_cast<lisp_abi::pair*>(var_val);
-            lisp_abi::symbol* var_name     = lisp_abi::object_cast<lisp_abi::symbol*>(var_val_pair->value.head);
-            lisp_abi::object* var_val      = var_val_pair->value.tail ? lisp_abi::object_cast<lisp_abi::pair*>(var_val_pair->value.tail)->value.head : nullptr;
+        for (lisp_abi::object* name_val : vars_list) {
+            lisp_abi::pair*   name_val_pair = lisp_abi::object_cast<lisp_abi::pair*>(name_val);
+            lisp_abi::symbol* var_name     = lisp_abi::object_cast<lisp_abi::symbol*>(name_val_pair->value.head);
+            lisp_abi::object* var_val      = name_val_pair->value.tail ? lisp_abi::object_cast<lisp_abi::pair*>(name_val_pair->value.tail)->value.head : nullptr;
             var_val = m.eval(var_val);
             scope.bindings[var_name->value] = var_val;
         }
