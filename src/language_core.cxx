@@ -38,7 +38,26 @@ void init_language_core(machine& m) {
         lisp_abi::object* result = m.eval(o);
         m.bindings.define(s.value, result);
         return result;
-    });;
+    });
+    utility::bind_syntax(m, "let", [&m](lisp_abi::pair& vars, utility::rest_arguments<lisp_abi::pair*> body) {
+        utility::constant_list_view vars_list(&vars);
+        scope_bindings scope = { scope_bindings::scope_type::let };
+        for (lisp_abi::object* var_val : vars_list) {
+            lisp_abi::pair*   var_val_pair = lisp_abi::object_cast<lisp_abi::pair*>(var_val);
+            lisp_abi::symbol* var_name     = lisp_abi::object_cast<lisp_abi::symbol*>(var_val_pair->value.head);
+            lisp_abi::object* var_val      = var_val_pair->value.tail ? lisp_abi::object_cast<lisp_abi::pair*>(var_val_pair->value.tail)->value.head : nullptr;
+            var_val = m.eval(var_val);
+            scope.bindings[var_name->value] = var_val;
+        }
+        scope_guard g(m.bindings, std::move(scope));
+
+        utility::constant_list_view progn(body.args);
+        lisp_abi::object* result = nullptr;
+        for (lisp_abi::object* expr : progn) {
+            result = m.eval(expr);
+        }
+        return result;
+    });
 
     utility::bind_syntax(m,   "quote",[&m](lisp_abi::object* o) { return o; } );
     utility::bind_syntax(m,   "if",   [&m](lisp_abi::object* o, lisp_abi::object* l, lisp_abi::object* r) { return m.eval(o)? m.eval(l) : m.eval(r); });

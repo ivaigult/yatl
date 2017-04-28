@@ -34,11 +34,6 @@ struct scope_bindings {
 		let,
     };
 
-    scope_bindings(const scope_bindings&) = delete;
-    scope_bindings& operator=(const scope_bindings&) = delete;
-    scope_bindings(scope_bindings&&) = default;
-    scope_bindings(scope_type type) : type(type) {}
-
     typedef std::map<std::string, lisp_abi::object*> object_map_t;
 	scope_type   type;
     object_map_t bindings;
