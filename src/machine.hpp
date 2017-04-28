@@ -22,6 +22,7 @@
 #pragma once
 
 #include "lisp_abi.hpp"
+#include "sym_binding.hpp"
 
 #include <vector>
 #include <map>
@@ -35,7 +36,6 @@ class machine {
 public:
     machine();
     lisp_abi::object* eval(lisp_abi::object* object);
-    void assoc(std::string name, lisp_abi::object* object);
     
     template<typename object_t, typename... args_t>
     object_t* alloc(args_t&&... args)
@@ -44,9 +44,10 @@ public:
         _allocated_objects.push_back(result);
         return result;
     }
+
+    symbol_space bindings;
 private:
     std::vector<lisp_abi::object*>           _allocated_objects;
-    std::map<std::string, lisp_abi::object*> _assoc;
 };
 
 }

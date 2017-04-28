@@ -33,8 +33,6 @@
 
 namespace yatl {
 namespace utility {
-    
-    
 template<typename functor_t>
 struct simple_function : public lisp_abi::native_function_type {
     typedef typename functor_traits<functor_t>::callable_type callable_type;
@@ -55,25 +53,11 @@ private:
 
 template<typename functor_t>
 void bind_function(machine& m, std::string name, functor_t functor)
-{ m.assoc(name, m.alloc<yatl::lisp_abi::native_function>(new simple_function<functor_t>(name, functor))); }
+{ m.bindings.define(name, m.alloc<yatl::lisp_abi::native_function>(new simple_function<functor_t>(name, functor))); }
 
 template<typename functor_t>
 void bind_syntax(machine& m, std::string name, functor_t functor)
-{ m.assoc(name, m.alloc<yatl::lisp_abi::native_syntax>(new simple_function<functor_t>(name, functor))); }
+{ m.bindings.define(name, m.alloc<yatl::lisp_abi::native_syntax>(new simple_function<functor_t>(name, functor))); }
     
 }
 }
-
-#define YATL_EXPORT_FUNCTION(m, func) do {                              \
-        typedef yatl::utility::simple_function<decltype(func)> __##func##__t; \
-        m.assoc(#func,  m.alloc<yatl::lisp_abi::native_function>(new __##func##__t(#func, func))); \
-    } while (false)
-
-
-
-#define YATL_EXPORT_NAMED_SYNTAX(m, name, func) do {                    \
-        typedef yatl::utility::simple_function<decltype(func)> __##func##__t; \
-        m.assoc(name,  m.alloc<yatl::lisp_abi::native_syntax>(new __##func##__t(name, func))); \
-    } while (false)
-
-#define YATL_EXPORT_SYNTAX(m, func) YATL_EXPORT_NAMED_SYNTAX(m, #func, func)

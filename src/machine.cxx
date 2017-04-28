@@ -43,10 +43,7 @@ lisp_abi::object* machine::eval(lisp_abi::object* object) {
     case object::object_type::symbol:
     {
         lisp_abi::symbol* sym = static_cast<lisp_abi::symbol*>(object);
-        std::map<std::string, lisp_abi::object*>::iterator found = _assoc.find(sym->value);
-        if (found == _assoc.end())
-            throw error::error().format("symbol \'", sym->value, "\' is unbound");
-        return found->second;
+        return bindings.lookup(sym->value);
     }
     break;
     case object::object_type::pair:
@@ -82,10 +79,6 @@ lisp_abi::object* machine::eval(lisp_abi::object* object) {
         break;
     }
     return nullptr;
-}
-
-void machine::assoc(std::string name, lisp_abi::object* object) {
-    _assoc[name] = object;
 }
 
 }
