@@ -23,12 +23,25 @@
 #include "list_view.hpp"
 #include "error.hpp"
 
+#include <type_traits>
+
 namespace yatl {
 namespace utility {
+
 template<typename rest_t>
 struct rest_arguments {
     rest_t args;
 };
+
+template<typename... args_t>
+struct is_variadic_arglist;
+template<typename head_t, typename... tail_t>
+struct is_variadic_arglist<head_t, tail_t...> : public is_variadic_arglist<tail_t...> {};
+template<typename rest_t>
+struct is_variadic_arglist<rest_arguments<rest_t> > : public std::true_type {};
+template<>
+struct is_variadic_arglist<> : public std::false_type {};
+
 namespace detail {
 
 template<typename>
@@ -82,7 +95,7 @@ struct arg_handler<lisp_abi::object*>
     }
 };
 
-// @todo: enalbe_if only if container_t is actualy libstdcxx like container (check push_back method)
+// @todo: enalbe_if only if container_t is actualy libstdcxx like container (at least check for push_back method)
 template<template<typename, typename> class container_t, template<typename> class alloc_t, typename element_t>
 struct arg_handler<rest_arguments<container_t<element_t, alloc_t<element_t> > > >
 {
@@ -127,27 +140,30 @@ struct list2tuple<functional_t> {
         return std::tuple<>();
     }
 };
-}
 
-template<typename tuple_t>
+
+template<bool is_variadic, typename tuple_t>
 struct validate_signature;
 
-template<typename element_t>
-struct validate_signature<std::tuple<rest_arguments<element_t> > > {
-    std::tuple<rest_arguments<element_t> > validate(lisp_abi::pair* list) {
-        constant_list_view list_view(list);
-        
-        detail::list2tuple<detail::arg_handler, rest_arguments<element_t> > list2tuple;
-        return list2tuple.convert(list_view.begin(), list_view.end());
-    }    
-};
-    
 template<typename... args_t>
-struct validate_signature<std::tuple<args_t...> > {
+struct validate_signature<true, std::tuple<args_t...> > {
     std::tuple<args_t...> validate(lisp_abi::pair* list) {
         size_t args_required = sizeof...(args_t);
         constant_list_view list_view(list);
+        // @todo: args_required could be zero, and list_view::size_type is unsigned
+        if (args_required > list_view.size()) {
+            throw error::error().format("too few arguments: ", args_required, " expected, ", list_view.size(), " provided");
+        }
+        detail::list2tuple<detail::arg_handler, args_t...> list2tuple;
+        return list2tuple.convert(list_view.begin(), list_view.end());
+    }
+};
 
+template<typename... args_t>
+struct validate_signature<false, std::tuple<args_t...> > {
+    std::tuple<args_t...> validate(lisp_abi::pair* list) {
+        size_t args_required = sizeof...(args_t);
+        constant_list_view list_view(list);
         if (args_required < list_view.size()) {
             throw error::error().format("too many arguments: ", args_required, " expected, ", list_view.size(), " provided");
         } else if (args_required > list_view.size()) {
@@ -158,5 +174,13 @@ struct validate_signature<std::tuple<args_t...> > {
         return list2tuple.convert(list_view.begin(), list_view.end());
     }
 };
+}
+
+template<typename tuple_t>
+struct validate_signature;
+
+template<typename... args_t>
+struct validate_signature<std::tuple<args_t...> > : public detail::validate_signature<is_variadic_arglist<args_t...>::value, std::tuple<args_t...> > {};
+
 }
 }
