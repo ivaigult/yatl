@@ -81,6 +81,35 @@ struct match_list<lisp_abi::object*>
     }
 };
 
+template<typename... args_t>
+struct list2tuple;
+
+template<typename... args_t>
+struct match_list<std::tuple<args_t...> > {
+    typedef std::tuple<args_t...> result_type;
+    result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator end) const {
+        constant_list_view list_view(&lisp_abi::object_cast<lisp_abi::pair&>(**it++));
+        // @todo: check tuple size
+        detail::list2tuple<args_t...> list2tuple;
+        return list2tuple.convert(list_view.begin(), list_view.end());
+    }
+};
+
+// @todo: enalbe_if only if container_t is actualy libstdcxx like container (at least check for push_back method)
+template<template<typename, typename> class container_t, template<typename> class alloc_t, typename element_t>
+struct match_list<container_t<element_t, alloc_t<element_t> > > {
+    typedef container_t<element_t, alloc_t<element_t> > result_type;
+    result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator end) const {
+        constant_list_view list_view(&lisp_abi::object_cast<lisp_abi::pair&>(**it++));
+        result_type result;
+        for (constant_list_view::iterator list_it = list_view.begin(); list_it != list_view.end(); ) {
+            match_list<std::add_lvalue_reference<element_t>::type> converter;
+            result.push_back(converter(list_it, list_view.end()));
+        }
+        return std::move(result);
+    }
+};
+
 // @todo: enalbe_if only if container_t is actualy libstdcxx like container (at least check for push_back method)
 template<template<typename, typename> class container_t, template<typename> class alloc_t, typename element_t>
 struct match_list<rest_arguments<container_t<element_t, alloc_t<element_t> > > >
@@ -89,8 +118,9 @@ struct match_list<rest_arguments<container_t<element_t, alloc_t<element_t> > > >
     typedef rest_arguments<container_type> result_type;
     result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator end) const {
         result_type result;
-        for (; it != end; ++it) {
-            result.args.push_back(lisp_abi::object_cast<element_t&>(**it));
+        for (; it != end; ) {
+            match_list<std::add_lvalue_reference<element_t>::type> converter;
+            result.args.push_back(converter(it, end));
         }
         return std::move(result);
     }
@@ -106,9 +136,6 @@ struct match_list<rest_arguments<lisp_abi::pair*> >
         return std::move(result);
     }
 };
-
-template<typename... args_t>
-struct list2tuple;
 
 template<typename head_t, typename... tail_t>
 struct list2tuple<head_t, tail_t...> {
