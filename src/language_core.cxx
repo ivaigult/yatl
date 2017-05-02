@@ -21,6 +21,7 @@
 
 #include "function_helpers.hpp"
 #include "machine.hpp"
+#include "lambda.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -50,6 +51,11 @@ void init_language_core(machine& m) {
         for (lisp_abi::object* expr : progn) {
             result = m.eval(expr);
         }
+        return result;
+    });
+
+    utility::bind_syntax(m, "lambda", [&m](std::vector<std::reference_wrapper<lisp_abi::symbol> > signature, lisp_abi::pair* body) -> lisp_abi::object* {
+        lisp_abi::native_function* result = m.alloc<lisp_abi::native_function>(new lambda(m, std::move(signature), body));
         return result;
     });
 
