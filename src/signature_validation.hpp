@@ -24,6 +24,7 @@
 #include "error.hpp"
 
 #include <type_traits>
+#include <functional>
 
 namespace yatl {
 namespace utility {
@@ -45,73 +46,92 @@ struct is_variadic_arglist<> : public std::false_type {};
 namespace detail {
 
 template<typename>
-struct arg_handler;
+struct match_list;
+
+template<typename value_t>
+struct match_list<std::reference_wrapper<value_t> > : public match_list<value_t&> {};
 
 template<typename value_t, lisp_abi::object::object_type type>
-struct arg_handler<lisp_abi::custom_object<value_t, type>*>
+struct match_list<lisp_abi::custom_object<value_t, type>*>
 {
-    typedef lisp_abi::custom_object<value_t, type>* result_type;
+    typedef lisp_abi::custom_object<value_t, type>  lisp_object_type;
+    typedef lisp_object_type*                       result_type;
     result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator) const {
         lisp_abi::object* current_obj = *it++;
         if (!current_obj)
             return nullptr;
-        if (current_obj->type != type) {
-            throw error::error().format("unexpected object type \'",
-				current_obj->type, 
-				"\', \'", 
-				type, 
-				"\' was expected");
-        }
-        return static_cast<result_type>(current_obj);
+        // force type check
+        return &lisp_abi::object_cast<lisp_object_type&>(*current_obj); 
     }
 };
 
 template<typename value_t, lisp_abi::object::object_type type>
-struct arg_handler<lisp_abi::custom_object<value_t, type>&>
+struct match_list<lisp_abi::custom_object<value_t, type>&>
 {
-    typedef lisp_abi::custom_object<value_t, type>& result_type;
+    typedef lisp_abi::custom_object<value_t, type>  lisp_object_type;
+    typedef lisp_object_type&                       result_type;
     result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator) const {
         lisp_abi::object* current_obj = *it++;
-        if (!current_obj) {
-            throw error::error().format("got nil, non nil was expected");
-        }
-        if (current_obj->type != type) {
-            throw error::error().format("unexpected object type \'",
-                current_obj->type,
-                "\', \'",
-                type,
-                "\' was expected");
-        }
-        return static_cast<result_type>(*current_obj);
+        return lisp_abi::object_cast<result_type>(*current_obj);
     }
 };
 
 template<>
-struct arg_handler<lisp_abi::object*>
+struct match_list<lisp_abi::object*>
 {
     typedef lisp_abi::object* result_type;
     result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator) const {
-        return static_cast<result_type>(*it++);
+        return lisp_abi::object_cast<result_type>(*it++);
+    }
+};
+
+template<typename... args_t>
+struct list2tuple;
+
+template<typename... args_t>
+struct match_list<std::tuple<args_t...> > {
+    typedef std::tuple<args_t...> result_type;
+    result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator end) const {
+        constant_list_view list_view(&lisp_abi::object_cast<lisp_abi::pair&>(**it++));
+        // @todo: check tuple size
+        detail::list2tuple<args_t...> list2tuple;
+        return list2tuple.convert(list_view.begin(), list_view.end());
     }
 };
 
 // @todo: enalbe_if only if container_t is actualy libstdcxx like container (at least check for push_back method)
 template<template<typename, typename> class container_t, template<typename> class alloc_t, typename element_t>
-struct arg_handler<rest_arguments<container_t<element_t, alloc_t<element_t> > > >
+struct match_list<container_t<element_t, alloc_t<element_t> > > {
+    typedef container_t<element_t, alloc_t<element_t> > result_type;
+    result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator end) const {
+        constant_list_view list_view(&lisp_abi::object_cast<lisp_abi::pair&>(**it++));
+        result_type result;
+        for (constant_list_view::iterator list_it = list_view.begin(); list_it != list_view.end(); ) {
+            match_list<element_t> converter;
+            result.push_back(converter(list_it, list_view.end()));
+        }
+        return std::move(result);
+    }
+};
+
+// @todo: enalbe_if only if container_t is actualy libstdcxx like container (at least check for push_back method)
+template<template<typename, typename> class container_t, template<typename> class alloc_t, typename element_t>
+struct match_list<rest_arguments<container_t<element_t, alloc_t<element_t> > > >
 {
     typedef container_t<element_t, alloc_t<element_t> > container_type;
     typedef rest_arguments<container_type> result_type;
     result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator end) const {
         result_type result;
-        for (; it != end; ++it) {
-            result.args.push_back(lisp_abi::object_cast<element_t&>(**it));
+        for (; it != end; ) {
+            match_list<element_t> converter;
+            result.args.push_back(converter(it, end));
         }
         return std::move(result);
     }
 };
 
 template<>
-struct arg_handler<rest_arguments<lisp_abi::pair*> >
+struct match_list<rest_arguments<lisp_abi::pair*> >
 {
     typedef rest_arguments<lisp_abi::pair*> result_type;
     result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator end) const {
@@ -121,21 +141,18 @@ struct arg_handler<rest_arguments<lisp_abi::pair*> >
     }
 };
 
-template<template<typename> class functional_t, typename... args_t>
-struct list2tuple;
-
-template<template<typename> class functional_t, typename head_t, typename... tail_t>
-struct list2tuple<functional_t, head_t, tail_t...> {
+template<typename head_t, typename... tail_t>
+struct list2tuple<head_t, tail_t...> {
     std::tuple<head_t, tail_t...> convert(constant_list_view::iterator begin, constant_list_view::iterator end) {
-        const functional_t<head_t> func = {};
-        typename functional_t<head_t>::result_type this_iteration = func(begin, end);
-        list2tuple<functional_t, tail_t...> next_iteration;
+        const match_list<head_t> func = {};
+        typename match_list<head_t>::result_type this_iteration = func(begin, end);
+        list2tuple<tail_t...> next_iteration;
         return std::tuple_cat(std::forward_as_tuple(this_iteration), next_iteration.convert(begin, end));
     }
 };
 
-template<template<typename> class functional_t>
-struct list2tuple<functional_t> {
+template<>
+struct list2tuple<> {
     std::tuple<> convert(constant_list_view::iterator, constant_list_view::iterator) {
         return std::tuple<>();
     }
@@ -154,7 +171,7 @@ struct validate_signature<true, std::tuple<args_t...> > {
         if (args_required > list_view.size()) {
             throw error::error().format("too few arguments: ", args_required, " expected, ", list_view.size(), " provided");
         }
-        detail::list2tuple<detail::arg_handler, args_t...> list2tuple;
+        detail::list2tuple<args_t...> list2tuple;
         return list2tuple.convert(list_view.begin(), list_view.end());
     }
 };
@@ -170,7 +187,7 @@ struct validate_signature<false, std::tuple<args_t...> > {
             throw error::error().format("too few arguments: ", args_required, " expected, ", list_view.size(), " provided");
         }
 
-        detail::list2tuple<detail::arg_handler, args_t...> list2tuple;
+        detail::list2tuple<args_t...> list2tuple;
         return list2tuple.convert(list_view.begin(), list_view.end());
     }
 };
