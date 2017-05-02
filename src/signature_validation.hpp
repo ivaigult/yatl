@@ -24,6 +24,7 @@
 #include "error.hpp"
 
 #include <type_traits>
+#include <functional>
 
 namespace yatl {
 namespace utility {
@@ -72,6 +73,9 @@ struct match_list<lisp_abi::custom_object<value_t, type>&>
     }
 };
 
+template<typename value_t, lisp_abi::object::object_type type>
+struct match_list<std::reference_wrapper<lisp_abi::custom_object<value_t, type> > > : public match_list<lisp_abi::custom_object<value_t, type>& > {};
+
 template<>
 struct match_list<lisp_abi::object*>
 {
@@ -103,7 +107,7 @@ struct match_list<container_t<element_t, alloc_t<element_t> > > {
         constant_list_view list_view(&lisp_abi::object_cast<lisp_abi::pair&>(**it++));
         result_type result;
         for (constant_list_view::iterator list_it = list_view.begin(); list_it != list_view.end(); ) {
-            match_list<std::add_lvalue_reference<element_t>::type> converter;
+            match_list<element_t> converter;
             result.push_back(converter(list_it, list_view.end()));
         }
         return std::move(result);
@@ -119,7 +123,7 @@ struct match_list<rest_arguments<container_t<element_t, alloc_t<element_t> > > >
     result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator end) const {
         result_type result;
         for (; it != end; ) {
-            match_list<std::add_lvalue_reference<element_t>::type> converter;
+            match_list<element_t> converter;
             result.args.push_back(converter(it, end));
         }
         return std::move(result);
