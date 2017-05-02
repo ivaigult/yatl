@@ -48,6 +48,9 @@ namespace detail {
 template<typename>
 struct match_list;
 
+template<typename value_t>
+struct match_list<std::reference_wrapper<value_t> > : public match_list<value_t&> {};
+
 template<typename value_t, lisp_abi::object::object_type type>
 struct match_list<lisp_abi::custom_object<value_t, type>*>
 {
@@ -72,9 +75,6 @@ struct match_list<lisp_abi::custom_object<value_t, type>&>
         return lisp_abi::object_cast<result_type>(*current_obj);
     }
 };
-
-template<typename value_t, lisp_abi::object::object_type type>
-struct match_list<std::reference_wrapper<lisp_abi::custom_object<value_t, type> > > : public match_list<lisp_abi::custom_object<value_t, type>& > {};
 
 template<>
 struct match_list<lisp_abi::object*>
