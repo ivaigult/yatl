@@ -50,48 +50,25 @@ struct match_list;
 template<typename value_t, lisp_abi::object::object_type type>
 struct match_list<lisp_abi::custom_object<value_t, type>*>
 {
-    typedef lisp_abi::custom_object<value_t, type>* result_type;
+    typedef lisp_abi::custom_object<value_t, type>  lisp_object_type;
+    typedef lisp_object_type*                       result_type;
     result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator) const {
         lisp_abi::object* current_obj = *it++;
         if (!current_obj)
             return nullptr;
-        if (current_obj->type != type) {
-            throw error::error().format("unexpected object type \'",
-				current_obj->type, 
-				"\', \'", 
-				type, 
-				"\' was expected");
-        }
-        return static_cast<result_type>(current_obj);
+        // force type check
+        return &lisp_abi::object_cast<lisp_object_type&>(*current_obj); 
     }
 };
 
 template<typename value_t, lisp_abi::object::object_type type>
 struct match_list<lisp_abi::custom_object<value_t, type>&>
 {
-    typedef lisp_abi::custom_object<value_t, type>& result_type;
+    typedef lisp_abi::custom_object<value_t, type>  lisp_object_type;
+    typedef lisp_object_type&                       result_type;
     result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator) const {
         lisp_abi::object* current_obj = *it++;
-        if (!current_obj) {
-            throw error::error().format("got nil, non nil was expected");
-        }
-        if (current_obj->type != type) {
-            throw error::error().format("unexpected object type \'",
-                current_obj->type,
-                "\', \'",
-                type,
-                "\' was expected");
-        }
         return static_cast<result_type>(*current_obj);
-    }
-};
-
-template<>
-struct match_list<lisp_abi::object*>
-{
-    typedef lisp_abi::object* result_type;
-    result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator) const {
-        return static_cast<result_type>(*it++);
     }
 };
 
