@@ -68,7 +68,16 @@ struct match_list<lisp_abi::custom_object<value_t, type>&>
     typedef lisp_object_type&                       result_type;
     result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator) const {
         lisp_abi::object* current_obj = *it++;
-        return static_cast<result_type>(*current_obj);
+        return lisp_abi::object_cast<result_type>(*current_obj);
+    }
+};
+
+template<>
+struct match_list<lisp_abi::object*>
+{
+    typedef lisp_abi::object* result_type;
+    result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator) const {
+        return lisp_abi::object_cast<result_type>(*it++);
     }
 };
 
