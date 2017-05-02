@@ -30,6 +30,8 @@ add_executable(yatl
   src/error.hpp
   src/function_helpers.hpp
   src/language_core.cxx
+  src/lambda.cxx
+  src/lambda.hpp
   src/lisp_abi.hpp
   src/list_view.hpp
   src/machine.cxx
