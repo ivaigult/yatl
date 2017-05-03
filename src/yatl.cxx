@@ -22,7 +22,24 @@
 
 #include "repl.hpp"
 
-int main()
+#include <iostream>
+#include <fstream>
+
+int main(int argc, char** argv)
 {
-    return yatl::repl(std::cin, std::cout, std::cerr).exec();
+    const char* script_file_name = nullptr;
+    for (size_t ii = 1; ii < argc && !script_file_name; ++ii) {
+        script_file_name = argv[ii];
+    }
+    std::istream* istream = &std::cin;
+    std::ostream* ostream = &std::cout;
+    std::ifstream script_file;
+    std::ofstream dev_null;
+    if (script_file_name) {
+        script_file.open(script_file_name);
+        istream = &script_file;
+        ostream = &dev_null;
+    }
+
+    return yatl::repl(*istream, *ostream, std::cerr).exec();
 }
