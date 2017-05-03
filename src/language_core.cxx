@@ -22,13 +22,14 @@
 #include "function_helpers.hpp"
 #include "machine.hpp"
 #include "lambda.hpp"
+#include "internal_helpers.hpp"
 
 #include <algorithm>
 #include <cassert>
 
 namespace yatl {
 namespace language_core {
-   
+
 void init_language_core(machine& m) {
     utility::bind_syntax(m, "define", [&m](lisp_abi::symbol& s, lisp_abi::object* o) { 
         lisp_abi::object* result = m.eval(o);
@@ -44,14 +45,9 @@ void init_language_core(machine& m) {
         scope_bindings scope = { scope_bindings::scope_type::let };
         std::for_each(bindings.begin(), bindings.end(), [&scope, &m](std::tuple<lisp_abi::symbol&, lisp_abi::object*>& b)
         { scope.bindings[std::get<0>(b).value] = m.eval(std::get<1>(b)); } );
-        scope_guard g(m.bindings, std::move(scope));
 
-        utility::constant_list_view progn(body.args);
-        lisp_abi::object* result = nullptr;
-        for (lisp_abi::object* expr : progn) {
-            result = m.eval(expr);
-        }
-        return result;
+        scope_guard g(m.bindings, std::move(scope));
+        return utility::begin(m, body.args);
     });
 
     utility::bind_syntax(m, "lambda", [&m](std::vector<std::reference_wrapper<lisp_abi::symbol> > signature, utility::rest_arguments<lisp_abi::pair*> body) -> lisp_abi::object* {
