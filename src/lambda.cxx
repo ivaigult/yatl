@@ -52,8 +52,8 @@ lisp_abi::object* lambda::eval(lisp_abi::pair* list) {
     for (size_t ii = 0; ii < _arg_names.size(); ++ii, ++it) {
         function_arguments.bindings[_arg_names[ii]] = *it;
     }
-
-    return utility::begin(_m, _body);
+    scope_guard g(_m.bindings, std::move(function_arguments));
+    return utility::begin(_m, _body);;
 }
 
 }

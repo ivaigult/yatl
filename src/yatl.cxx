@@ -22,7 +22,78 @@
 
 #include "repl.hpp"
 
-int main()
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <functional>
+#include <map>
+
+enum class parse_result {
+    ok,
+    stop,
+    error
+};
+
+int main(int argc, char** argv)
 {
-    return yatl::repl(std::cin, std::cout, std::cerr).exec();
+    size_t arg_counter = 1;
+    std::istream* istream = &std::cin;
+    std::ostream* ostream = &std::cout;
+    std::ifstream script_file;
+    std::string   expression;
+    std::istringstream expression_stream;
+    std::ofstream dev_null;
+
+    auto print_help = [&argv]() -> parse_result {
+        std::cerr << "Usage: " << argv[0] << " [script_path] [script_args]" << std::endl;
+        std::cerr << "       " << argv[0] << " [-e|--expr] expression" << std::endl;
+        return parse_result::error;
+    };
+
+    auto set_expression = [&]() {
+        const char* expression_str = argv[++arg_counter];
+        expression = expression_str? expression_str : "";
+        expression_stream.str(expression);
+        istream = &expression_stream;
+        return parse_result::stop;
+    };
+
+    auto default_arg = [&]() {
+        script_file.open(argv[arg_counter]);
+        if (!script_file) {
+            std::cerr << "Unable to open " << argv[arg_counter] << std::endl;
+            return parse_result::error;
+        }
+        istream = &script_file;
+        ostream = &dev_null;
+        return parse_result::stop;
+    };
+
+    std::map<std::string, std::function<parse_result(void)> > arg_parser = {   
+        {"-h",      print_help },
+        { "--help", print_help },
+        {"-e",      set_expression },
+        { "--expr", set_expression },
+    };
+
+    for (; arg_counter < argc; ++arg_counter) {
+        parse_result result = parse_result::ok;
+        auto found = arg_parser.find(argv[arg_counter]);
+        if (found != arg_parser.end()) {
+            result = found->second();
+        } else {
+            default_arg();
+        }
+        switch (result) {
+        case parse_result::ok:
+            continue;
+        case parse_result::stop:
+            goto done_parsing;
+        case parse_result::error:
+            exit(EXIT_FAILURE);
+        }
+    }
+done_parsing:;
+
+    return yatl::repl(*istream, *ostream, std::cerr).exec();
 }
