@@ -54,9 +54,16 @@ void init_language_core(machine& m) {
         lisp_abi::native_function* result = m.alloc<lisp_abi::native_function>(new lambda(m, std::move(signature), body.args));
         return result;
     });
+    utility::bind_syntax(m, "cond", [&m](utility::rest_arguments<std::vector< std::tuple<lisp_abi::object*, lisp_abi::object*> > > cond_value_list) -> lisp_abi::object* {
+        for (std::tuple<lisp_abi::object*, lisp_abi::object*>& cond_value : cond_value_list.args) {
+            if (utility::to_boolean(m.eval(std::get<0>(cond_value)))) {
+                return m.eval(std::get<1>(cond_value));
+            }
+        }
+        return nullptr;
+    });
 
     utility::bind_syntax(m,   "quote",[&m](lisp_abi::object* o) { return o; } );
-    utility::bind_syntax(m,   "if",   [&m](lisp_abi::object* o, lisp_abi::object* l, lisp_abi::object* r) { return m.eval(o)? m.eval(l) : m.eval(r); });
 
     utility::bind_function(m, "eval", [&m](lisp_abi::object* o) { return m.eval(o); });
     utility::bind_function(m, "car",  [&m](lisp_abi::pair&   l) { return l.value.head; });
