@@ -46,7 +46,15 @@ parser::object_stream_t& parser::parse(const tokenizer::token_stream_t& tokens)
             _quote_stack.push(_list_stack.top().front_pair());
         } else {
             lisp_abi::object* new_item = nullptr;
-            new_item = _repl.m.alloc<lisp_abi::symbol>(token.content);
+            
+            assert(!token.content.empty());
+            char* endptr = nullptr;
+            float number = std::strtof(token.content.c_str(), &endptr);
+            if (endptr != token.content.c_str()) {
+                new_item = _repl.m.alloc<lisp_abi::number>(number);
+            } else {
+                new_item = _repl.m.alloc<lisp_abi::symbol>(token.content);
+            }
             
             _complete_object(new_item);
         }
