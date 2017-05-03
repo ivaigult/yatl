@@ -1,7 +1,9 @@
+;; Factorial is a clasical example for lisp interpreters
+
 (define factorial
 	(lambda (x)
 		(cond
-			((= x 0) 1)
+			((= x 0) 1) ;; !0 = 1
 			(#t (* x (factorial (- x 1))))
 		)
 	)

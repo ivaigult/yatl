@@ -43,7 +43,7 @@ public:
                 }
             }
             catch (error::error& e) {
-                _out << e.what() << std::endl;
+                _err << e.what() << std::endl;
             }
         }
 
