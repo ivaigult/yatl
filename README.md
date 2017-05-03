@@ -17,7 +17,7 @@ bind_function(m, "+", [&m](utility::rest_arguments<std::vector<std::reference_wr
 ```
 Those lines check if argument list contains non nil numbers and does accumulation using standart libstdcxx functions.
 
-The project is under heavy development, almost nothing is supported. For more details see: `STATUS.md`.
+The project is under heavy development, almost nothing is supported. But recently we reached turing-completeness. For more details see: `STATUS.md`.
 
 ## Build
 ```
