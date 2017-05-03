@@ -44,7 +44,7 @@ lisp_abi::object* symbol_space::lookup(const std::string& name) const {
         }
     }
 
-    throw error::error().format("Symbol ", name, " is not bound");
+    throw error::error().format("symbol ", name, " is not bound");
 }
 
 void symbol_space::define(const std::string& name, lisp_abi::object* obj) {
@@ -68,7 +68,7 @@ void symbol_space::set(const std::string& name, lisp_abi::object* obj) {
     if (scope.bindings.end() != found) {
         found->second = obj;
     } else {
-        throw error::error().format("Symbol ", name, " is not bound");
+        throw error::error().format("symbol ", name, " is not bound");
     }
 }
 

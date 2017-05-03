@@ -143,6 +143,14 @@ type_to_t object_cast(object* o) { return detail::object_cast_helper<type_to_t>{
 template<typename type_to_t>
 type_to_t object_cast(object& o) { return detail::object_cast_helper<type_to_t>{}.do_cast(o); }
 
+template<typename type_to_t>
+type_to_t derefference_object_cast(object* o) {
+    if (!o)
+        throw error::error().format("unexpected \'nil\' object");
+    return object_cast<type_to_t>(*o);
+}
+
+
 std::ostream& operator<<(std::ostream& os, const object& obj);
 std::ostream& operator<<(std::ostream& os, const object::object_type& t);
 
