@@ -62,6 +62,9 @@ void init_language_core(machine& m) {
         }
         return nullptr;
     });
+    utility::bind_function(m, "=", [&m](lisp_abi::number& l, lisp_abi::number& r) {
+        return m.alloc<lisp_abi::boolean>(l.value == r.value);
+    });
 
     utility::bind_syntax(m,   "quote",[&m](lisp_abi::object* o) { return o; } );
 
