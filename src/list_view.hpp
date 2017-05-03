@@ -64,6 +64,7 @@ public:
             return prev_node;
         }
         value_type   operator*() const { return _node->value.head; }
+        operator lisp_abi::pair*()     { return _node; }
     private:
         lisp_abi::pair* _node;
     };

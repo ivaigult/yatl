@@ -34,6 +34,7 @@ struct object {
         unknown,
         pair,
         symbol,
+        boolean,
         number,
         string,
         native_function,
@@ -85,6 +86,7 @@ struct pair_type {
 
 typedef custom_object<std::string,           object::object_type::symbol>          symbol;
 typedef custom_object<std::string,           object::object_type::string>          string;
+typedef custom_object<bool,                  object::object_type::boolean>         boolean;
 typedef custom_object<float,                 object::object_type::number>          number;
 typedef custom_object<pair_type,             object::object_type::pair>            pair;
 
@@ -151,7 +153,6 @@ std::ostream& operator<<(std::ostream& os, const string& obj);
 std::ostream& operator<<(std::ostream& os, const pair& obj);
 std::ostream& operator<<(std::ostream& os, const native_function& obj);
 std::ostream& operator<<(std::ostream& os, const user_data& obj);
-
 
 }    
 }

@@ -34,7 +34,6 @@ public:
         apostrophe,
         left_bracket,
         right_bracket,
-        number,
     };
     
     struct token {

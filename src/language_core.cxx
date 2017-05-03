@@ -54,8 +54,8 @@ void init_language_core(machine& m) {
         return result;
     });
 
-    utility::bind_syntax(m, "lambda", [&m](std::vector<std::reference_wrapper<lisp_abi::symbol> > signature, lisp_abi::pair* body) -> lisp_abi::object* {
-        lisp_abi::native_function* result = m.alloc<lisp_abi::native_function>(new lambda(m, std::move(signature), body));
+    utility::bind_syntax(m, "lambda", [&m](std::vector<std::reference_wrapper<lisp_abi::symbol> > signature, utility::rest_arguments<lisp_abi::pair*> body) -> lisp_abi::object* {
+        lisp_abi::native_function* result = m.alloc<lisp_abi::native_function>(new lambda(m, std::move(signature), body.args));
         return result;
     });
 
@@ -77,7 +77,10 @@ void init_language_core(machine& m) {
     });
     utility::bind_function(m, "-",     [&m](utility::rest_arguments<std::vector<std::reference_wrapper<lisp_abi::number> > > numbers) {
         lisp_abi::number* result = m.alloc<lisp_abi::number>(0.0f);
-        std::for_each(numbers.args.begin(), numbers.args.end(), [&result](const lisp_abi::number& n) { result->value -= n.value; });
+        if (numbers.args.empty())
+            return result;
+        result->value = numbers.args.front().get().value;
+        std::for_each(numbers.args.begin() + 1, numbers.args.end(), [&result](const lisp_abi::number& n) { result->value -= n.value; });
         return result;
     });
     utility::bind_function(m, "*",     [&m](utility::rest_arguments<std::vector<std::reference_wrapper<lisp_abi::number> > > numbers) {

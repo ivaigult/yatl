@@ -37,6 +37,7 @@ lisp_abi::object* machine::eval(lisp_abi::object* object) {
         return nullptr;
 
     switch(object->type) {
+    case lisp_abi::object::object_type::boolean:
     case lisp_abi::object::object_type::number:
     case object::object_type::string:
         return object;
