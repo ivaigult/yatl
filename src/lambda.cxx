@@ -22,6 +22,7 @@
 #include "lambda.hpp"
 #include "machine.hpp"
 #include "list_view.hpp"
+#include "internal_helpers.hpp"
 
 #include <algorithm>
 
@@ -52,13 +53,7 @@ lisp_abi::object* lambda::eval(lisp_abi::pair* list) {
         function_arguments.bindings[_arg_names[ii]] = *it;
     }
 
-    scope_guard g(_m.bindings, std::move(function_arguments));
-    lisp_abi::object* result = nullptr;
-    for (lisp_abi::object* expr : _progn) {
-        result = _m.eval(expr);
-    }
-
-    return result;
+    return utility::begin(_m, _body);
 }
 
 }
