@@ -47,7 +47,7 @@ struct simple_function : public lisp_abi::native_function_type {
         using namespace yatl::apply_workaround;
         return std::apply(_callable, args);
     }    
-private:    
+private:  
     callable_type _callable;
 };
 
