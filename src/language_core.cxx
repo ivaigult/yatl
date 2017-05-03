@@ -54,8 +54,8 @@ void init_language_core(machine& m) {
         return result;
     });
 
-    utility::bind_syntax(m, "lambda", [&m](std::vector<std::reference_wrapper<lisp_abi::symbol> > signature, lisp_abi::pair* body) -> lisp_abi::object* {
-        lisp_abi::native_function* result = m.alloc<lisp_abi::native_function>(new lambda(m, std::move(signature), body));
+    utility::bind_syntax(m, "lambda", [&m](std::vector<std::reference_wrapper<lisp_abi::symbol> > signature, utility::rest_arguments<lisp_abi::pair*> body) -> lisp_abi::object* {
+        lisp_abi::native_function* result = m.alloc<lisp_abi::native_function>(new lambda(m, std::move(signature), body.args));
         return result;
     });
 

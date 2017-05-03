@@ -31,6 +31,7 @@ lambda::lambda(machine& m, std::vector<std::reference_wrapper<lisp_abi::symbol> 
     : native_function_type("lambda")
     , _m(m)
     , _body(body)
+    , _progn(_body)
 {
     std::for_each(signature.begin(), signature.end(), [this](lisp_abi::symbol& s) { this->_arg_names.push_back(s.value); });
 }
@@ -52,7 +53,12 @@ lisp_abi::object* lambda::eval(lisp_abi::pair* list) {
     }
 
     scope_guard g(_m.bindings, std::move(function_arguments));
-    return _m.eval(_body);
+    lisp_abi::object* result = nullptr;
+    for (lisp_abi::object* expr : _progn) {
+        result = _m.eval(expr);
+    }
+
+    return result;
 }
 
 }

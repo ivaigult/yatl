@@ -20,6 +20,7 @@
 */
 
 #include "lisp_abi.hpp"
+#include "list_view.hpp"
 
 #include <vector>
 #include <functional>
@@ -31,9 +32,10 @@ public:
     lambda(machine& m, std::vector<std::reference_wrapper<lisp_abi::symbol> > signature, lisp_abi::pair* body);
     virtual lisp_abi::object* eval(lisp_abi::pair* list);
 private:
-    machine&                 _m;
-    std::vector<std::string> _arg_names;
-    lisp_abi::pair*          _body;
+    machine&                    _m;
+    std::vector<std::string>    _arg_names;
+    lisp_abi::pair*             _body;
+    utility::constant_list_view _progn;
 };
 
 }

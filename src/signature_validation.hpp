@@ -136,7 +136,7 @@ struct match_list<rest_arguments<lisp_abi::pair*> >
     typedef rest_arguments<lisp_abi::pair*> result_type;
     result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator end) const {
         result_type result;
-        result.args = lisp_abi::object_cast<lisp_abi::pair*>(*it);
+        result.args = it;
         return std::move(result);
     }
 };
