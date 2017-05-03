@@ -3,10 +3,10 @@
 ### Atomic Types
 - [x] Boolean
 - [ ] Numbers
-..* [ ] Complex
-..* [x] Real
-..* [ ] Rational
-..* [ ] Integer
+  * [ ] Complex
+  * [x] Real
+  * [ ] Rational
+  * [ ] Integer
 - [ ] Strings
 - [ ] Characters
 - [x] Symbols
@@ -17,15 +17,15 @@
 ## Special Forms
 - [ ] Lambda expressions (named lambdas and closures are unsupported, no TCO)
 - [ ] Lexical bindings (only `let`, `define` and `set!` are supported)
-..* [x] `define`
-..* [x] `set!`
-..* [x] `let`
-..* [ ] `let*`
-..* [ ] `fluid-let`
+  * [x] `define`
+  * [x] `set!`
+  * [x] `let`
+  * [ ] `let*`
+  * [ ] `fluid-let`
 - [x] Quoting
 - [ ] Conditionals
-..* [x] `cond`
-..* [ ] ...
+  * [x] `cond`
+  * [ ] ...
 - [x] begin
 - [ ] iterations
 - [ ] macroses
