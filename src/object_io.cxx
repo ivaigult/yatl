@@ -31,6 +31,7 @@ const char* object_type2str(object::object_type type) {
     switch (type) {
     case object::object_type::pair:            return "pair";
     case object::object_type::symbol:          return "symbol";
+    case object::object_type::boolean:         return "boolean";
     case object::object_type::number:          return "number";
     case object::object_type::string:          return "string";
     case object::object_type::native_function: return "native_function";
@@ -39,17 +40,8 @@ const char* object_type2str(object::object_type type) {
     }
 }
 
-std::ostream& operator<<(std::ostream& os, const object::object_type& type) {
-    switch (type) {
-    case object::object_type::pair:            return os << "pair";
-    case object::object_type::symbol:          return os << "symbol";
-    case object::object_type::number:          return os << "number";
-    case object::object_type::string:          return os << "string";
-    case object::object_type::native_function: return os << "native_function";
-    case object::object_type::user_data:       return os << "user_data";
-    default:                                   return os << "unknown";
-    }
-}
+std::ostream& operator<<(std::ostream& os, const object::object_type& type) 
+{ return os << object_type2str(type); }
 
 std::ostream& operator<<(std::ostream& os, const string& obj) {
     // @todo: escape symbols
@@ -74,6 +66,14 @@ std::ostream& operator<<(std::ostream& os, const pair& obj) {
     return os;
 }
 
+std::ostream& operator<<(std::ostream& os, const boolean &obj) {
+    if (obj.value) {
+        return os << "#t";
+    } else {
+        return os << "#f";
+    }
+}
+
 std::ostream& operator<<(std::ostream& os, const native_function& obj) {
     os << "<native_function: " << obj.value << ">";
     return os;
@@ -93,6 +93,7 @@ std::ostream& operator<<(std::ostream& os, const object& obj) {
     switch (obj.type) {
     case object::object_type::pair:            return os << static_cast<const pair&>(obj);
     case object::object_type::symbol:          return os << static_cast<const symbol&>(obj);
+    case object::object_type::boolean:         return os << static_cast<const boolean&>(obj);
     case object::object_type::number:          return os << static_cast<const number&>(obj);
     case object::object_type::string:          return os << static_cast<const string&>(obj);
     case object::object_type::native_function: return os << static_cast<const native_function&>(obj);
