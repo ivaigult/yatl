@@ -58,6 +58,17 @@ int main(int argc, char** argv)
         return parse_result::stop;
     };
 
+    auto default_arg = [&]() {
+        script_file.open(argv[arg_counter]);
+        if (!script_file) {
+            std::cerr << "Unable to open " << argv[arg_counter] << std::endl;
+            return parse_result::error;
+        }
+        istream = &script_file;
+        ostream = &dev_null;
+        return parse_result::stop;
+    };
+
     std::map<std::string, std::function<parse_result(void)> > arg_parser = {   
         {"-h",      print_help },
         { "--help", print_help },
@@ -66,26 +77,20 @@ int main(int argc, char** argv)
     };
 
     for (; arg_counter < argc; ++arg_counter) {
+        parse_result result = parse_result::ok;
         auto found = arg_parser.find(argv[arg_counter]);
         if (found != arg_parser.end()) {
-            parse_result result = found->second();
-            switch (result) {
-            case parse_result::ok:
-                continue;
-            case parse_result::stop:
-                goto done_parsing;
-            case parse_result::error:
-                exit(EXIT_FAILURE);
-            }
+            result = found->second();
         } else {
-            script_file.open(argv[arg_counter]);
-            if (!script_file) {
-                std::cerr << "Unable to open " << argv[arg_counter] << std::endl;
-                exit(EXIT_FAILURE);
-            }
-            istream = &script_file;
-            ostream = &dev_null;
-            break;
+            default_arg();
+        }
+        switch (result) {
+        case parse_result::ok:
+            continue;
+        case parse_result::stop:
+            goto done_parsing;
+        case parse_result::error:
+            exit(EXIT_FAILURE);
         }
     }
 done_parsing:;
