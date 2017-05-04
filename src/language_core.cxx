@@ -54,6 +54,13 @@ void init_language_core(machine& m) {
         lisp_abi::native_function* result = m.alloc<lisp_abi::native_function>(new lambda(m, std::move(signature), body.args));
         return result;
     });
+
+    utility::bind_syntax(m, "named-lambda", [&m](std::tuple<lisp_abi::symbol&, utility::rest_arguments<std::vector<std::reference_wrapper<lisp_abi::symbol> > > > signature,
+                                                 utility::rest_arguments<lisp_abi::pair*> body) -> lisp_abi::object* {
+        lisp_abi::native_function* result = m.alloc<lisp_abi::native_function>(new lambda(m, std::get<0>(signature).value, std::move(std::get<1>(signature).args), body.args));
+        return result;
+    });
+
     utility::bind_syntax(m, "cond", [&m](utility::rest_arguments<std::vector< std::tuple<lisp_abi::object*, lisp_abi::object*> > > cond_value_list) -> lisp_abi::object* {
         for (std::tuple<lisp_abi::object*, lisp_abi::object*>& cond_value : cond_value_list.args) {
             if (utility::to_boolean(m.eval(std::get<0>(cond_value)))) {
