@@ -43,8 +43,23 @@ const tokenizer::token_stream_t& tokenizer::tokenize(std::string line) {
     // @todo: handle comments
     tokenizer::token current_token = {};
     bool parsing_string = false;
-    uint32_t escape = 0;
+    bool escape = false;
     for (char sym : line) {
+        if (parsing_string) {
+            if (sym == '\\' && !escape) {
+                escape = true;
+                continue;
+            } else if (sym == '\"' && !escape) {
+                parsing_string = false;
+                _emit_token(current_token);
+                continue;
+            }
+            current_token.type = tokenizer::token_type::string;
+            current_token.content += sym;
+            escape = false;
+            continue;
+        }
+
         if (sym == '(') {
             _emit_token(current_token);
             _token_stream.push_back({tokenizer::token_type::left_bracket, "(" });
@@ -60,21 +75,17 @@ const tokenizer::token_stream_t& tokenizer::tokenize(std::string line) {
         } else if (sym == ';') {
             _emit_token(current_token);
             break;
-        } else if (sym == '\"' && !escape) {
-            if (!parsing_string) {
-                _emit_token(current_token);
-            }
-            parsing_string = !parsing_string;
-        } else if (sym == '\\' && parsing_string && !escape) {
-            escape = 2;
-        } else if (std::isspace(sym) && !parsing_string) {
+        } else if (sym == '\"') {
+            _emit_token(current_token);
+            parsing_string = true;
+            continue;
+        } else if (std::isspace(sym)) {
             _emit_token(current_token);
             continue;
         }
 
         current_token.type = tokenizer::token_type::symbols;
         current_token.content += sym;
-        if (escape) { --escape; }
     }
     _emit_token(current_token);
     return _token_stream;
