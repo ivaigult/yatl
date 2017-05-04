@@ -7,7 +7,7 @@
   * [x] Real
   * [ ] Rational
   * [ ] Integer
-- [ ] Strings
+- [x] Strings
 - [ ] Characters
 - [x] Symbols
 ### Compound Types
@@ -15,7 +15,7 @@
 - [ ] Pairs (`(a . b)` doted pairs are unsupported)
 - [ ] Vectors
 ## Special Forms
-- [ ] Lambda expressions (named lambdas and closures are unsupported, no TCO)
+- [ ] Lambda expressions (closures are unsupported, no TCO)
 - [ ] Lexical bindings (only `let`, `define` and `set!` are supported)
   * [x] `define`
   * [x] `set!`
@@ -29,12 +29,6 @@
 - [x] begin
 - [ ] iterations
 - [ ] macroses
-## CLI features
-Completely nothing
-## Demos
-The same as above
-## Tests
-The same as above
 
 
 
