@@ -136,6 +136,13 @@ struct object_cast_helper<object*> {
     { return o; }
 };
 
+template<>
+struct object_cast_helper<object&> {
+    typedef object& result_type;
+    result_type do_cast(object& o)
+    { return o; }
+};
+
 }
 
 template<typename type_to_t>
