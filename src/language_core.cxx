@@ -31,9 +31,24 @@ namespace yatl {
 namespace language_core {
 
 void init_language_core(machine& m) {
-    utility::bind_syntax(m, "define", [&m](lisp_abi::symbol& s, lisp_abi::object* o) { 
-        lisp_abi::object* result = m.eval(o);
-        m.bindings.define(s.value, result); 
+    utility::bind_syntax(m, "define", [&m](lisp_abi::object& first, utility::rest_arguments<lisp_abi::pair*> o) -> lisp_abi::object* {
+        lisp_abi::object* result = nullptr;
+        if (lisp_abi::symbol* sym = lisp_abi::object_cast<lisp_abi::symbol*>(&first)) {
+            if (o.args) {
+                result = m.eval(o.args->value.head);
+                m.bindings.define(sym->value, result);
+            } else {
+                m.bindings.undefine(sym->value);
+            }
+        } else if (lisp_abi::pair* pair = lisp_abi::object_cast<lisp_abi::pair*>(&first)) {
+            typedef std::tuple<lisp_abi::symbol&, utility::rest_arguments<std::vector<std::reference_wrapper<lisp_abi::symbol> > > > name_and_args_t;
+            name_and_args_t signature = utility::validate_signature<name_and_args_t>().validate(pair);
+            std::string name = std::get<0>(signature).value;
+            result = m.alloc<lisp_abi::native_function>(new lambda(m, name, std::move(std::get<1>(signature).args), o.args));
+            m.bindings.define(name, result);
+        } else {
+            throw error::error().format("unexpected object type \'", first.type, "\' sym or list was expected");
+        }
         return result;
     });
     utility::bind_syntax(m, "set!",   [&m](lisp_abi::symbol& s, lisp_abi::object* o) {
@@ -54,6 +69,13 @@ void init_language_core(machine& m) {
         lisp_abi::native_function* result = m.alloc<lisp_abi::native_function>(new lambda(m, std::move(signature), body.args));
         return result;
     });
+
+    utility::bind_syntax(m, "named-lambda", [&m](std::tuple<lisp_abi::symbol&, utility::rest_arguments<std::vector<std::reference_wrapper<lisp_abi::symbol> > > > signature,
+                                                 utility::rest_arguments<lisp_abi::pair*> body) -> lisp_abi::object* {
+        lisp_abi::native_function* result = m.alloc<lisp_abi::native_function>(new lambda(m, std::get<0>(signature).value, std::move(std::get<1>(signature).args), body.args));
+        return result;
+    });
+
     utility::bind_syntax(m, "cond", [&m](utility::rest_arguments<std::vector< std::tuple<lisp_abi::object*, lisp_abi::object*> > > cond_value_list) -> lisp_abi::object* {
         for (std::tuple<lisp_abi::object*, lisp_abi::object*>& cond_value : cond_value_list.args) {
             if (utility::to_boolean(m.eval(std::get<0>(cond_value)))) {

@@ -30,6 +30,7 @@ namespace yatl {
 class lambda : public lisp_abi::native_function_type {
 public:
     lambda(machine& m, std::vector<std::reference_wrapper<lisp_abi::symbol> > signature, lisp_abi::pair* body);
+    lambda(machine& m, const std::string& name, std::vector<std::reference_wrapper<lisp_abi::symbol> > signature, lisp_abi::pair* body);
     virtual lisp_abi::object* eval(lisp_abi::pair* list);
 private:
     machine&                    _m;

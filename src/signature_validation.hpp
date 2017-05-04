@@ -72,7 +72,7 @@ struct match_list<lisp_abi::custom_object<value_t, type>&>
     typedef lisp_object_type&                       result_type;
     result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator) const {
         lisp_abi::object* current_obj = *it++;
-        return lisp_abi::object_cast<result_type>(*current_obj);
+        return lisp_abi::derefference_object_cast<result_type>(current_obj);
     }
 };
 
@@ -82,6 +82,15 @@ struct match_list<lisp_abi::object*>
     typedef lisp_abi::object* result_type;
     result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator) const {
         return lisp_abi::object_cast<result_type>(*it++);
+    }
+};
+
+template<>
+struct match_list<lisp_abi::object&>
+{
+    typedef lisp_abi::object& result_type;
+    result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator) const {
+        return lisp_abi::derefference_object_cast<result_type>(*it++);
     }
 };
 
@@ -165,7 +174,7 @@ struct validate_signature;
 template<typename... args_t>
 struct validate_signature<true, std::tuple<args_t...> > {
     std::tuple<args_t...> validate(lisp_abi::pair* list) {
-        size_t args_required = sizeof...(args_t);
+        size_t args_required = sizeof...(args_t) - 1;
         constant_list_view list_view(list);
         // @todo: args_required could be zero, and list_view::size_type is unsigned
         if (args_required > list_view.size()) {
