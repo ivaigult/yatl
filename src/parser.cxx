@@ -53,6 +53,8 @@ parser::object_stream_t& parser::parse(const tokenizer::token_stream_t& tokens)
 
             if (endptr != token.content.c_str()) {
                 new_item = _repl.m.alloc<lisp_abi::number>(number);
+            } else if (token.content[0] == '\"') {
+                new_item = _repl.m.alloc<lisp_abi::string>(token.content.begin() + 1, token.content.end() - 1);
             } else if (token.content[0] == '#') {
                 if (token.content == "#t") {
                     new_item = _repl.m.alloc<lisp_abi::boolean>(true);

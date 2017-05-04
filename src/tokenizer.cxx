@@ -22,8 +22,10 @@
 #include "tokenizer.hpp"
 #include "error.hpp"
 
+#include <algorithm>
 #include <cctype>
 #include <cassert>
+
 
 namespace yatl {
 
@@ -40,6 +42,8 @@ const tokenizer::token_stream_t& tokenizer::tokenize(std::string line) {
     // @todo: handle strings
     // @todo: handle comments
     tokenizer::token current_token = {};
+    bool parsing_string = false;
+    uint32_t escape = 0;
     for (char sym : line) {
         if (sym == '(') {
             _emit_token(current_token);
@@ -56,13 +60,21 @@ const tokenizer::token_stream_t& tokenizer::tokenize(std::string line) {
         } else if (sym == ';') {
             _emit_token(current_token);
             break;
-        } else if (std::isspace(sym)) {
+        } else if (sym == '\"' && !escape) {
+            if (!parsing_string) {
+                _emit_token(current_token);
+            }
+            parsing_string = !parsing_string;
+        } else if (sym == '\\' && parsing_string && !escape) {
+            escape = 2;
+        } else if (std::isspace(sym) && !parsing_string) {
             _emit_token(current_token);
             continue;
         }
 
         current_token.type = tokenizer::token_type::symbols;
         current_token.content += sym;
+        if (escape) { --escape; }
     }
     _emit_token(current_token);
     return _token_stream;
