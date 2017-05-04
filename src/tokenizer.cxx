@@ -39,8 +39,6 @@ void tokenizer::_emit_token(token& token) {
 const tokenizer::token_stream_t& tokenizer::tokenize(std::string line) {
     _token_stream.clear();
     // @todo: handle multiline tokens
-    // @todo: handle strings
-    // @todo: handle comments
     tokenizer::token current_token = {};
     bool parsing_string = false;
     bool escape = false;
