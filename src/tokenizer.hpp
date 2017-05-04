@@ -31,6 +31,7 @@ public:
     enum class token_type {
         unknown,
         symbols,
+        string,
         apostrophe,
         left_bracket,
         right_bracket,

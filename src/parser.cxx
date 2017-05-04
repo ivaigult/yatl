@@ -51,8 +51,11 @@ parser::object_stream_t& parser::parse(const tokenizer::token_stream_t& tokens)
             assert(!token.content.empty());
             float number = std::strtof(token.content.c_str(), &endptr);
 
-            if (endptr != token.content.c_str()) {
+            if (tokenizer::token_type::string == token.type) {
+                new_item = _repl.m.alloc<lisp_abi::string>(token.content);
+            } else if (endptr != token.content.c_str()) {
                 new_item = _repl.m.alloc<lisp_abi::number>(number);
+            } else if (token.content.front() == '\"') {
             } else if (token.content[0] == '#') {
                 if (token.content == "#t") {
                     new_item = _repl.m.alloc<lisp_abi::boolean>(true);
