@@ -32,7 +32,6 @@
 		("str" ())
 		(#t (error "Any string should evaluate to true"))
 	)
-	
 ))
 
 (add-test "and-test" (lambda ()
