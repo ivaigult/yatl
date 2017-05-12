@@ -113,7 +113,7 @@ template<template<typename, typename> class container_t, template<typename> clas
 struct match_list<container_t<element_t, alloc_t<element_t> > > {
     typedef container_t<element_t, alloc_t<element_t> > result_type;
     result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator end) const {
-        constant_list_view list_view(&lisp_abi::object_cast<lisp_abi::pair&>(**it++));
+        constant_list_view list_view(&lisp_abi::derefference_object_cast<lisp_abi::pair&>(*it++));
         result_type result;
         for (constant_list_view::iterator list_it = list_view.begin(); list_it != list_view.end(); ) {
             match_list<element_t> converter;
