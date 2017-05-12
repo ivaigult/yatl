@@ -30,29 +30,37 @@ namespace yatl {
 
 class repl {
 public:
-    repl(std::istream& in, std::ostream& out, std::ostream& err) : _in(in), _out(out), _err(err), _tokenizer(*this), _parser(*this) {}
+    repl(std::vector<std::reference_wrapper<std::istream> > streams, std::ostream& out, std::ostream& err) 
+        : _input_streams(streams)
+        , _out(out)
+        , _err(err)
+        , _tokenizer(*this)
+        , _parser(*this) 
+    {}
+
     int exec() {
         std::string line;
-        for (; std::getline(_in, line); ) {
-            try {
-                const tokenizer::token_stream_t& tokens = _tokenizer.tokenize(line);
-                parser::object_stream_t objects = _parser.parse(tokens);
-                for (lisp_abi::object* o : objects) {
-                    auto result = m.eval(o);
-                    _out << *result << std::endl;
+        for (std::istream& in : _input_streams) {
+            for (; std::getline(in, line); ) {
+                try {
+                    const tokenizer::token_stream_t& tokens = _tokenizer.tokenize(line);
+                    parser::object_stream_t objects = _parser.parse(tokens);
+                    for (lisp_abi::object* o : objects) {
+                        auto result = m.eval(o);
+                        _out << *result << std::endl;
+                    }
+                }
+                catch (error::error& e) {
+                    _err << e.what() << std::endl;
                 }
             }
-            catch (error::error& e) {
-                _err << e.what() << std::endl;
-            }
         }
-
         return 0;
     }
 
     machine       m;
 private:
-    std::istream& _in;
+    std::vector<std::reference_wrapper<std::istream> > _input_streams;
     std::ostream& _out;
     std::ostream& _err;
     tokenizer     _tokenizer;

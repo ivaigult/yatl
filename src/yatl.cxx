@@ -40,6 +40,7 @@ int main(int argc, char** argv)
     std::istream* istream = &std::cin;
     std::ostream* ostream = &std::cout;
     std::ifstream script_file;
+    std::ifstream preload_file;
     std::string   expression;
     std::istringstream expression_stream;
     std::ofstream dev_null;
@@ -58,6 +59,17 @@ int main(int argc, char** argv)
         return parse_result::stop;
     };
 
+    auto set_preload_file = [&]() {
+        const char* preload_file_name = argv[++arg_counter];
+        preload_file_name = preload_file_name ? preload_file_name : "";
+        preload_file.open(preload_file_name);
+        if (!preload_file) {
+            std::cerr << "Unable to open " << argv[arg_counter] << std::endl;
+            return parse_result::error;
+        }
+        return parse_result::ok;
+    };
+
     auto default_arg = [&]() {
         script_file.open(argv[arg_counter]);
         if (!script_file) {
@@ -70,10 +82,12 @@ int main(int argc, char** argv)
     };
 
     std::map<std::string, std::function<parse_result(void)> > arg_parser = {   
-        {"-h",      print_help },
-        { "--help", print_help },
-        {"-e",      set_expression },
-        { "--expr", set_expression },
+        {"-h",         print_help },
+        { "--help",    print_help },
+        {"-e",         set_expression },
+        { "--expr",    set_expression },
+        { "-p",        set_preload_file },
+        { "--preload", set_preload_file },
     };
 
     for (; arg_counter < argc; ++arg_counter) {
@@ -94,6 +108,10 @@ int main(int argc, char** argv)
         }
     }
 done_parsing:;
-
-    return yatl::repl(*istream, *ostream, std::cerr).exec();
+    std::vector<std::reference_wrapper<std::istream> > streams;
+    if (preload_file) {
+        streams.push_back(preload_file);
+    }
+    streams.push_back(*istream);
+    return yatl::repl(streams, *ostream, std::cerr).exec();
 }
