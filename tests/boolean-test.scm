@@ -1,11 +1,10 @@
+(define true-objs '(#t 0 1 "" "str" 'sym ()))
+(define false-objs '(#f))
+
+
 (add-test "boolean-parse-test" (lambda ()
-	(assert #t "True is true")
-	(assert 0 "Any number is true")
-	(assert 1 "Any number is true")
-	(assert 2 "Any number is true")
-	;; (assert "" "Any string is true") FIXME!!!!!!
-	(assert "str" "Any string is true")
-	(assert (not #f) "False is false")
+	(map (lambda (x) (assert x "unexpected false")) true-objs)
+	(map (lambda (x) (assert (not x) "unexpected true")) false-objs)
 ))
 
 (add-test "cond-test" (lambda ()

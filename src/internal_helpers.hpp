@@ -29,7 +29,7 @@ namespace utility {
 
 inline bool to_boolean(lisp_abi::object* o) {
     if (!o)
-        return false;
+        return true;
     lisp_abi::boolean* boolean = lisp_abi::object_cast<lisp_abi::boolean*>(o);
     if (!boolean)
         return true;
