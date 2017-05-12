@@ -47,7 +47,6 @@
 		))
 	(define (and-check-true args)
 		(define call-with-args (cons 'and args))
-		(print call-with-args)
 		(assert (eval call-with-args) "Unexpected false")
 	)
 	(map and-check-true should-eval-to-true)
@@ -61,14 +60,13 @@
 		))
 	(define (and-check-false args)
 		(define call-with-args (cons 'and args))
-		(print call-with-args)
 		(assert (not (eval call-with-args)) "Unexpected true")
 	)
 	(map and-check-false should-eval-to-false)
 ))
 
 (add-test "or-test" (lambda ()
-    ;; All args are true
+    ;; One arg is true
 	(define should-eval-to-true
 		'( 
 			(#t) (1) 
@@ -77,15 +75,13 @@
 		))
 	(define (or-check-true args)
 		(define call-with-args (cons 'or args))
-		(print call-with-args)
 		(assert (eval call-with-args) "Unexpected false")
 	)
 	(map or-check-true should-eval-to-true)
-	;; One of args is false
+	;; All args are false
 	(define should-eval-to-false '((#f) (#f #f) (#f #f #f) ))
 	(define (or-check-false args)
 		(define call-with-args (cons 'or args))
-		(print call-with-args)
 		(assert (not (eval call-with-args)) "Unexpected true")
 	)
 	(map or-check-false should-eval-to-false)
