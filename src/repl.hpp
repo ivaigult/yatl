@@ -40,6 +40,7 @@ public:
 
     int exec() {
         std::string line;
+        int error_code = EXIT_SUCCESS;
         for (std::istream& in : _input_streams) {
             for (; std::getline(in, line); ) {
                 try {
@@ -52,10 +53,11 @@ public:
                 }
                 catch (error::error& e) {
                     _err << e.what() << std::endl;
+                    error_code = EXIT_FAILURE;
                 }
             }
         }
-        return 0;
+        return error_code;
     }
 
     machine       m;
