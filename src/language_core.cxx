@@ -111,6 +111,9 @@ void init_language_core(machine& m) {
     utility::bind_function(m, "and", [&m](utility::rest_arguments<std::vector<lisp_abi::object*> > args) { 
         return m.alloc<lisp_abi::boolean>(std::all_of(args.args.begin(), args.args.end(), utility::to_boolean));
     });
+    utility::bind_function(m, "or", [&m](utility::rest_arguments<std::vector<lisp_abi::object*> > args) {
+        return m.alloc<lisp_abi::boolean>(std::any_of(args.args.begin(), args.args.end(), utility::to_boolean));
+    });
 
 
     utility::bind_function(m, "boolean?", type_predicate<lisp_abi::object::object_type::boolean> {m});

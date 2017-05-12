@@ -67,4 +67,28 @@
 	(map and-check-false should-eval-to-false)
 ))
 
+(add-test "or-test" (lambda ()
+    ;; All args are true
+	(define should-eval-to-true
+		'( 
+			(#t) (1) 
+			(#t #f)	(#f 1) (1 #f) (1 1)
+			(#t #f #f) (#t #f 1) (#f 1 #f) (#t 1 1) 
+		))
+	(define (or-check-true args)
+		(define call-with-args (cons 'or args))
+		(print call-with-args)
+		(assert (eval call-with-args) "Unexpected false")
+	)
+	(map or-check-true should-eval-to-true)
+	;; One of args is false
+	(define should-eval-to-false '((#f) (#f #f) (#f #f #f) ))
+	(define (or-check-false args)
+		(define call-with-args (cons 'or args))
+		(print call-with-args)
+		(assert (not (eval call-with-args)) "Unexpected true")
+	)
+	(map or-check-false should-eval-to-false)
+))
+
 (run-all-tests)
