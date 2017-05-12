@@ -49,10 +49,10 @@ const tokenizer::token_stream_t& tokenizer::tokenize(std::string line) {
                 continue;
             } else if (sym == '\"' && !escape) {
                 parsing_string = false;
-                _emit_token(current_token);
+                _token_stream.push_back(current_token);
+                current_token = {};
                 continue;
             }
-            current_token.type = tokenizer::token_type::string;
             current_token.content += sym;
             escape = false;
             continue;
@@ -76,6 +76,7 @@ const tokenizer::token_stream_t& tokenizer::tokenize(std::string line) {
         } else if (sym == '\"') {
             _emit_token(current_token);
             parsing_string = true;
+            current_token.type = tokenizer::token_type::string;
             continue;
         } else if (std::isspace(sym)) {
             _emit_token(current_token);
