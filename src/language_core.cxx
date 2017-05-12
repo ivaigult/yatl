@@ -98,6 +98,18 @@ void init_language_core(machine& m) {
         list_view.push_front(o);
         return list_view.front_pair();
     });
+    utility::bind_function(m, "list", [&m](utility::rest_arguments<lisp_abi::pair*> elements) { return elements.args; });
+    utility::bind_function(m, "map", [&m](lisp_abi::native_function& fn, lisp_abi::pair& pair) {
+        utility::constant_list_view list(&pair);
+        lisp_abi::object* result = nullptr;
+        for (utility::constant_list_view::iterator it = list.begin(); it != list.end(); ++it) {
+            utility::list_view arg_list(m);
+            arg_list.push_back(*it);
+            result = fn.value->eval(arg_list.front_pair());
+        }
+        return result;
+    });
+
     utility::bind_function(m, "+",     [&m](utility::rest_arguments<std::vector<std::reference_wrapper<lisp_abi::number> > > numbers) {
         lisp_abi::number* result = m.alloc<lisp_abi::number>(0.0f);
         std::for_each(numbers.args.begin(), numbers.args.end(), [&result](const lisp_abi::number& n) { result->value += n.value; });
