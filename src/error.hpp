@@ -21,11 +21,16 @@
 
 #pragma once
 
+#include "object.hpp"
+#include "object_io.hpp"
+#include "machine.hpp"
+
 #include <iostream>
 #include <stdexcept>
 #include <sstream>
 
 namespace yatl {
+class machine;
 namespace error {
 struct error;
 namespace detail {
@@ -48,7 +53,7 @@ struct error : std::exception {
     {
         std::stringstream message_stream;
         detail::print(message_stream, std::forward<args_t>(args)...);
-        _message = message_stream.str();
+        _message += message_stream.str();
         return *this;
     }
 
@@ -56,6 +61,13 @@ struct error : std::exception {
     virtual const char* what() const throw() { return _message.c_str(); }
 protected:
     std::string    _message;
+};
+
+struct runtime_error : public error {
+    runtime_error(machine& m, lisp_abi::object* obj);
+    runtime_error(machine& m, lisp_abi::string& message, lisp_abi::pair* irritants);
+
+    lisp_abi::object* raise_obj;
 };
 
 }

@@ -19,50 +19,31 @@
 * THE SOFTWARE.
 */
 
-#pragma once
-
-#include "object.hpp"
-
-#include <map>
-#include <vector>
+#include "error.hpp"
+#include "machine.hpp"
+#include "list_view.hpp"
 
 namespace yatl {
-struct scope_bindings {
-    enum class scope_type {
-		global,
-        lambda_closure,
-		lambda_args,
-		let,
-    };
+namespace error {
 
-    typedef std::map<std::string, lisp_abi::object*> object_map_t;
-	scope_type   type;
-    object_map_t bindings;
-};
+runtime_error::runtime_error(machine& m, lisp_abi::object* obj) {
+    format("runtime_error: ", *obj);
+    raise_obj = obj;
+}
 
-class symbol_space {
-public:
-    symbol_space();
-    lisp_abi::object* lookup(const std::string& name);
-    void define(const std::string& name, lisp_abi::object*);
-    void undefine(const std::string& name);
-    void set(const std::string& name, lisp_abi::object*);
+runtime_error::runtime_error(machine& m, lisp_abi::string& message, lisp_abi::pair* irritants) {
+    format("runtime_error: ", message.value);
 
-    void push_scope(scope_bindings&& scope);
-    void pop_scope();
-private:
-    scope_bindings::object_map_t::iterator _find_symbol(const std::string name);
-    typedef std::vector<scope_bindings> bindings_stack_t;
-    bindings_stack_t  _bindings_stack;
-};
+    utility::list_view raise_obj_list(m);
+    utility::constant_list_view irritants_list(irritants);
 
-struct scope_guard {
-    scope_guard(symbol_space& space, scope_bindings&& scope) : _space(space)
-    { _space.push_scope(std::move(scope)); }
-    ~scope_guard()
-    { _space.pop_scope(); }
-private:
-    symbol_space& _space;
-};
+    raise_obj_list.push_back(&message);
+    for (utility::constant_list_view::iterator it = irritants_list.begin(); it != irritants_list.end(); ++it) {
+        raise_obj_list.push_back(*it);
+    }
 
+    raise_obj = raise_obj_list.front_pair();
+}
+
+}
 }

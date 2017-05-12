@@ -30,6 +30,23 @@
 namespace yatl {
 namespace language_core {
 
+template<lisp_abi::object::object_type type>
+struct type_predicate {
+    type_predicate(machine& m)
+        : m(m)
+    {}
+    type_predicate(const type_predicate&) = default;
+    
+    lisp_abi::object* operator()(lisp_abi::object* o) {
+        lisp_abi::boolean* result = m.alloc<lisp_abi::boolean>(false);
+        if (o) {
+            result->value = type == o->type;
+        }
+        return result;
+    }
+    machine& m;
+};
+
 void init_language_core(machine& m) {
     utility::bind_syntax(m, "define", [&m](lisp_abi::object& first, utility::rest_arguments<lisp_abi::pair*> o) -> lisp_abi::object* {
         lisp_abi::object* result = nullptr;
@@ -53,7 +70,7 @@ void init_language_core(machine& m) {
     });
     utility::bind_syntax(m, "set!",   [&m](lisp_abi::symbol& s, lisp_abi::object* o) {
         lisp_abi::object* result = m.eval(o);
-        m.bindings.define(s.value, result);
+        m.bindings.set(s.value, result);
         return result;
     });
     utility::bind_syntax(m, "let", [&m](std::vector<std::tuple<lisp_abi::symbol&, lisp_abi::object*> > bindings, utility::rest_arguments<lisp_abi::pair*> body) {
@@ -90,6 +107,21 @@ void init_language_core(machine& m) {
 
     utility::bind_syntax(m,   "quote",[&m](lisp_abi::object* o) { return o; } );
 
+    utility::bind_function(m, "not", [&m](lisp_abi::object* o) { return m.alloc<lisp_abi::boolean>(!utility::to_boolean(o)); });
+    utility::bind_function(m, "and", [&m](utility::rest_arguments<std::vector<lisp_abi::object*> > args) { 
+        return m.alloc<lisp_abi::boolean>(std::all_of(args.args.begin(), args.args.end(), utility::to_boolean));
+    });
+    utility::bind_function(m, "or", [&m](utility::rest_arguments<std::vector<lisp_abi::object*> > args) {
+        return m.alloc<lisp_abi::boolean>(std::any_of(args.args.begin(), args.args.end(), utility::to_boolean));
+    });
+
+
+    utility::bind_function(m, "boolean?", type_predicate<lisp_abi::object::object_type::boolean> {m});
+    utility::bind_function(m, "number?",  type_predicate<lisp_abi::object::object_type::number>  {m});
+    utility::bind_function(m, "string?",  type_predicate<lisp_abi::object::object_type::string>  {m});
+    utility::bind_function(m, "symbol?",  type_predicate<lisp_abi::object::object_type::symbol>  {m});
+    utility::bind_function(m, "pair?",    type_predicate<lisp_abi::object::object_type::pair>    {m});
+
     utility::bind_function(m, "eval", [&m](lisp_abi::object* o) { return m.eval(o); });
     utility::bind_function(m, "car",  [&m](lisp_abi::pair&   l) { return l.value.head; });
     utility::bind_function(m, "cdr",  [&m](lisp_abi::pair&   l) { return l.value.tail; });
@@ -98,6 +130,18 @@ void init_language_core(machine& m) {
         list_view.push_front(o);
         return list_view.front_pair();
     });
+    utility::bind_function(m, "list", [&m](utility::rest_arguments<lisp_abi::pair*> elements) { return elements.args; });
+    utility::bind_function(m, "map", [&m](lisp_abi::native_function& fn, lisp_abi::pair* pair) {
+        utility::constant_list_view list(pair);
+        lisp_abi::object* result = nullptr;
+        for (utility::constant_list_view::iterator it = list.begin(); it != list.end(); ++it) {
+            utility::list_view arg_list(m);
+            arg_list.push_back(*it);
+            result = fn.value->eval(arg_list.front_pair());
+        }
+        return result;
+    });
+
     utility::bind_function(m, "+",     [&m](utility::rest_arguments<std::vector<std::reference_wrapper<lisp_abi::number> > > numbers) {
         lisp_abi::number* result = m.alloc<lisp_abi::number>(0.0f);
         std::for_each(numbers.args.begin(), numbers.args.end(), [&result](const lisp_abi::number& n) { result->value += n.value; });
@@ -129,8 +173,41 @@ void init_language_core(machine& m) {
         return result;
     });
 
-    utility::bind_function(m, "print", [&m](lisp_abi::object* o){ std::cout << *o << std::endl; return o; });
+    utility::bind_function(m, "print", [&m](utility::rest_arguments<lisp_abi::pair*> rest) 
+    { 
+        utility::constant_list_view arg_list(rest.args);
+        lisp_abi::object* result = nullptr;
+        for (utility::constant_list_view::iterator it = arg_list.begin(); it != arg_list.end(); ++it) {
+            result = *it;
+            std::cout << *result;
+        }
+        std::cout << std::endl;
+        return result;
+    });
     utility::bind_function(m, "quit",  [&m]() -> lisp_abi::object* { exit(EXIT_SUCCESS); return nullptr; });
+    utility::bind_function(m, "exit",  [&m](lisp_abi::number& code) -> lisp_abi::object* { exit(static_cast<int>(code.value)); });
+
+    utility::bind_function(m, "raise", [&m](lisp_abi::object* o) -> lisp_abi::object* { throw error::runtime_error(m, o); });
+    utility::bind_function(m, "error", [&m](lisp_abi::string& message, utility::rest_arguments<lisp_abi::pair*> rest) -> lisp_abi::object* {
+        std::stringstream error_stream;
+        error_stream << message << " ";
+        utility::constant_list_view objs(rest.args);
+        for (utility::constant_list_view::iterator it = objs.begin(); it != objs.end(); ++it) {
+            error_stream << (*it) << " ";
+        }
+        throw error::runtime_error(m, message, rest.args);
+    });
+    utility::bind_function(m, "with-exception-handler", [&m](lisp_abi::native_function& handler, lisp_abi::native_function& thunk) {
+        lisp_abi::object* result = nullptr;
+        try {
+            result = thunk.value->eval(nullptr);
+        } catch (const error::runtime_error& e) {
+            utility::list_view arg_list(m);
+            arg_list.push_back(e.raise_obj);
+            result = handler.value->eval(arg_list.front_pair());
+        }
+        return result;
+    });
 }
 
 }
