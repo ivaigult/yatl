@@ -48,7 +48,7 @@ struct error : std::exception {
     {
         std::stringstream message_stream;
         detail::print(message_stream, std::forward<args_t>(args)...);
-        _message = message_stream.str();
+        _message += message_stream.str();
         return *this;
     }
 
@@ -56,6 +56,12 @@ struct error : std::exception {
     virtual const char* what() const throw() { return _message.c_str(); }
 protected:
     std::string    _message;
+};
+
+struct runtime_error : error {
+    runtime_error()
+        : error()
+    { _message = "runtime_error: "; }
 };
 
 }

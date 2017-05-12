@@ -131,6 +131,16 @@ void init_language_core(machine& m) {
 
     utility::bind_function(m, "print", [&m](lisp_abi::object* o){ std::cout << *o << std::endl; return o; });
     utility::bind_function(m, "quit",  [&m]() -> lisp_abi::object* { exit(EXIT_SUCCESS); return nullptr; });
+
+    utility::bind_function(m, "error", [&m](lisp_abi::string& message, utility::rest_arguments<lisp_abi::pair*> rest) -> lisp_abi::object* {
+        std::stringstream error_stream;
+        error_stream << message << " ";
+        utility::constant_list_view objs(rest.args);
+        for (utility::constant_list_view::iterator it = objs.begin(); it != objs.end(); ++it) {
+            error_stream << (*it) << " ";
+        }
+        throw error::runtime_error().format(error_stream.str());
+    });
 }
 
 }
