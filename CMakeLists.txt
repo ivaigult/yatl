@@ -28,6 +28,7 @@ add_executable(yatl
   src/yatl.cxx
   src/apply_workaround.hpp
   src/error.hpp
+  src/error.cxx
   src/function_helpers.hpp
   src/language_core.cxx
   src/lambda.cxx
@@ -36,6 +37,9 @@ add_executable(yatl
   src/list_view.hpp
   src/machine.cxx
   src/machine.hpp
+  src/object.hpp
+  src/object_cast.hpp
+  src/object_io.hpp
   src/object_io.cxx
   src/parser.cxx
   src/parser.hpp

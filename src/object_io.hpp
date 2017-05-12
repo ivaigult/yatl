@@ -18,50 +18,20 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 * THE SOFTWARE.
 */
-
 #pragma once
 
-#include "object.hpp"
-
-#include <map>
-#include <vector>
-
 namespace yatl {
-struct scope_bindings {
-    enum class scope_type {
-		global,
-        lambda_closure,
-		lambda_args,
-		let,
-    };
+namespace lisp_abi {
 
-    typedef std::map<std::string, lisp_abi::object*> object_map_t;
-	scope_type   type;
-    object_map_t bindings;
-};
+std::ostream& operator<<(std::ostream& os, const object& obj);
+std::ostream& operator<<(std::ostream& os, const object::object_type& t);
 
-class symbol_space {
-public:
-    symbol_space();
-    lisp_abi::object* lookup(const std::string& name) const;
-    void define(const std::string& name, lisp_abi::object*);
-    void undefine(const std::string& name);
-    void set(const std::string& name, lisp_abi::object*);
+template<typename value_type_t, object::object_type type_id>
+std::ostream& operator<<(std::ostream& os, const custom_object<value_type_t, type_id>& obj) { return os << obj.value; }
 
-    void push_scope(scope_bindings&& scope);
-    void pop_scope();
-private:
-    typedef std::vector<scope_bindings> bindings_stack_t;
-    bindings_stack_t  _bindings_stack;
-};
-
-struct scope_guard {
-    scope_guard(symbol_space& space, scope_bindings&& scope) : _space(space)
-    { _space.push_scope(std::move(scope)); }
-    ~scope_guard()
-    { _space.pop_scope(); }
-private:
-    symbol_space& _space;
-};
-
+std::ostream& operator<<(std::ostream& os, const string& obj);
+std::ostream& operator<<(std::ostream& os, const pair& obj);
+std::ostream& operator<<(std::ostream& os, const native_function& obj);
+std::ostream& operator<<(std::ostream& os, const user_data& obj);
+}    
 }

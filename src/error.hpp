@@ -21,11 +21,16 @@
 
 #pragma once
 
+#include "object.hpp"
+#include "object_io.hpp"
+#include "machine.hpp"
+
 #include <iostream>
 #include <stdexcept>
 #include <sstream>
 
 namespace yatl {
+class machine;
 namespace error {
 struct error;
 namespace detail {
@@ -58,10 +63,11 @@ protected:
     std::string    _message;
 };
 
-struct runtime_error : error {
-    runtime_error()
-        : error()
-    { _message = "runtime_error: "; }
+struct runtime_error : public error {
+    runtime_error(machine& m, lisp_abi::object* obj);
+    runtime_error(machine& m, lisp_abi::string& message, lisp_abi::pair* irritants);
+
+    lisp_abi::object* raise_obj;
 };
 
 }

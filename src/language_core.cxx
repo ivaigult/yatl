@@ -132,6 +132,7 @@ void init_language_core(machine& m) {
     utility::bind_function(m, "print", [&m](lisp_abi::object* o){ std::cout << *o << std::endl; return o; });
     utility::bind_function(m, "quit",  [&m]() -> lisp_abi::object* { exit(EXIT_SUCCESS); return nullptr; });
 
+    utility::bind_function(m, "raise", [&m](lisp_abi::object* o) -> lisp_abi::object* { throw error::runtime_error(m, o); });
     utility::bind_function(m, "error", [&m](lisp_abi::string& message, utility::rest_arguments<lisp_abi::pair*> rest) -> lisp_abi::object* {
         std::stringstream error_stream;
         error_stream << message << " ";
@@ -139,7 +140,18 @@ void init_language_core(machine& m) {
         for (utility::constant_list_view::iterator it = objs.begin(); it != objs.end(); ++it) {
             error_stream << (*it) << " ";
         }
-        throw error::runtime_error().format(error_stream.str());
+        throw error::runtime_error(m, message, rest.args);
+    });
+    utility::bind_function(m, "with-exception-handler", [&m](lisp_abi::native_function& handler, lisp_abi::native_function& thunk) {
+        lisp_abi::object* result = nullptr;
+        try {
+            result = thunk.value->eval(nullptr);
+        } catch (const error::runtime_error& e) {
+            utility::list_view arg_list(m);
+            arg_list.push_back(e.raise_obj);
+            result = handler.value->eval(arg_list.front_pair());
+        }
+        return result;
     });
 }
 

@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "lisp_abi.hpp"
+#include "object.hpp"
 #include "sym_binding.hpp"
 
 #include <vector>
