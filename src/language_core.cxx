@@ -143,6 +143,7 @@ void init_language_core(machine& m) {
 
     utility::bind_function(m, "print", [&m](lisp_abi::object* o){ std::cout << *o << std::endl; return o; });
     utility::bind_function(m, "quit",  [&m]() -> lisp_abi::object* { exit(EXIT_SUCCESS); return nullptr; });
+    utility::bind_function(m, "exit",  [&m](lisp_abi::number& code) -> lisp_abi::object* { exit(static_cast<int>(code.value)); });
 
     utility::bind_function(m, "raise", [&m](lisp_abi::object* o) -> lisp_abi::object* { throw error::runtime_error(m, o); });
     utility::bind_function(m, "error", [&m](lisp_abi::string& message, utility::rest_arguments<lisp_abi::pair*> rest) -> lisp_abi::object* {
