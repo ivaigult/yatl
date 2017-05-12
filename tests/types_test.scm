@@ -9,7 +9,7 @@
 (add-test "type-predicates-test" (lambda ()
 	;; Atomic types
 	(assert (atom? 1)      "number is atom type")
-	;; (assert (atom? "")    "string is atom type") FIXME!!!!!
+	(assert (atom? "")     "string is atom type")
 	(assert (atom? "str")  "string is atom type")
 	(assert (atom? 'sym )  "symbol is atom type")
 	(assert (atom? '() )   "nil is atom")
