@@ -18,38 +18,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-project(yatl)
+function(add_yatl_test test_name)
+  set(test_status_file "${CMAKE_CURRENT_BINARY_DIR}/${test_name}.ok")
+  add_custom_command(OUTPUT ${test_status_file}
+            COMMAND $<TARGET_FILE:yatl> -p ${CMAKE_CURRENT_SOURCE_DIR}/test-framework.scm ${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.scm
+			COMMAND ${CMAKE_COMMAND} -E touch ${test_status_file}
+  )
+  add_custom_target(launch_${test_name} DEPENDS ${test_status_file})
+  set_target_properties(launch_${test_name} PROPERTIES FOLDER "tests")
+  if (NOT TARGET run_all_tests)
+    add_custom_target(run_all_tests)
+  endif()
+  add_dependencies(run_all_tests launch_${test_name})
+endfunction()
 
-cmake_minimum_required(VERSION 3.3)
-
-set (CMAKE_CXX_STANDARD 11)
-
-add_executable(yatl
-  src/yatl.cxx
-  src/apply_workaround.hpp
-  src/error.hpp
-  src/error.cxx
-  src/function_helpers.hpp
-  src/language_core.cxx
-  src/lambda.cxx
-  src/lambda.hpp
-  src/lisp_abi.hpp
-  src/list_view.hpp
-  src/machine.cxx
-  src/machine.hpp
-  src/object.hpp
-  src/object_cast.hpp
-  src/object_io.hpp
-  src/object_io.cxx
-  src/parser.cxx
-  src/parser.hpp
-  src/repl.cxx
-  src/repl.hpp
-  src/signature_validation.hpp
-  src/sym_binding.cxx
-  src/sym_binding.hpp
-  src/tokenizer.cxx
-  src/tokenizer.hpp
-)
-
-add_subdirectory(tests)
+add_yatl_test(list_test)
