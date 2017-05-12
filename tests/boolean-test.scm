@@ -8,29 +8,8 @@
 ))
 
 (add-test "cond-test" (lambda ()
-	;; Boolean
-	(cond
-		(#f (error "This shouldn't be evaluated"))
-		(#t ())
-	)
-	;; Numbers
-	(cond
-		(0 ())
-		(#t (error "Zero should evaluate to true"))
-	)
-	(cond
-		(1 ())
-		(#t (error "Number should work"))
-	)
-	;; Strings 
-	(cond
-		("" ())
-		(#t (error "Empty string should evaluate to true"))
-	)
-	(cond
-		("str" ())
-		(#t (error "Any string should evaluate to true"))
-	)
+	(map (lambda (x) (cond (x ()) (#t (error "Unexpected false")))) true-objs)
+	(map (lambda (x) (cond (x (error "Unexpected true")) (#t ()))) false-objs)
 ))
 
 (add-test "and-test" (lambda ()
