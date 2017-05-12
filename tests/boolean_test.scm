@@ -24,15 +24,14 @@
 		(#t (error "Number should work"))
 	)
 	;; Strings 
-	;; (cond !FIXME
-	;; 	("" ())
-	;; 	(#t (error "Empty string should evaluate to true"))
-	;; )
+	(cond
+		("" ())
+		(#t (error "Empty string should evaluate to true"))
+	)
 	(cond
 		("str" ())
 		(#t (error "Any string should evaluate to true"))
 	)
-	
 ))
 
 (add-test "and-test" (lambda ()

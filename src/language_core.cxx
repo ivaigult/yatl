@@ -121,6 +121,9 @@ void init_language_core(machine& m) {
     utility::bind_function(m, "string?",  type_predicate<lisp_abi::object::object_type::string>  {m});
     utility::bind_function(m, "symbol?",  type_predicate<lisp_abi::object::object_type::symbol>  {m});
     utility::bind_function(m, "pair?",    type_predicate<lisp_abi::object::object_type::pair>    {m});
+    utility::bind_function(m, "atom?", [&m](lisp_abi::object* o) {
+        return m.alloc<lisp_abi::boolean>(!o || o->type != lisp_abi::object::object_type::pair);
+    });
 
     utility::bind_function(m, "eval", [&m](lisp_abi::object* o) { return m.eval(o); });
     utility::bind_function(m, "car",  [&m](lisp_abi::pair&   l) { return l.value.head; });

@@ -6,5 +6,17 @@
 	(assert (pair? '(1 2)) "(1 2) is pair")
 ))
 
+(add-test "type-predicates-test" (lambda ()
+	;; Atomic types
+	(assert (atom? 1)      "number is atom type")
+	(assert (atom? "")     "string is atom type")
+	(assert (atom? "str")  "string is atom type")
+	(assert (atom? 'sym )  "symbol is atom type")
+	(assert (atom? '() )   "nil is atom")
+	(assert (atom? #t)     "boolean is atom")
+	;; Non-atomic types
+	(assert (not (atom? '(1)))   "pair is not atom")
+	(assert (not (atom? '(1 2))) "pair is not atom")
+))
 
 (run-all-tests)

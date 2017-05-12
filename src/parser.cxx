@@ -47,16 +47,11 @@ parser::object_stream_t& parser::parse(const tokenizer::token_stream_t& tokens)
         } else {
             lisp_abi::object* new_item = nullptr;
             
-            char* endptr = nullptr;
-            assert(!token.content.empty());
-            float number = std::strtof(token.content.c_str(), &endptr);
-
+            assert(!token.content.empty() || token.type == tokenizer::token_type::string);
+            
             if (tokenizer::token_type::string == token.type) {
                 new_item = _repl.m.alloc<lisp_abi::string>(token.content);
-            } else if (endptr != token.content.c_str()) {
-                new_item = _repl.m.alloc<lisp_abi::number>(number);
-            } else if (token.content.front() == '\"') {
-            } else if (token.content[0] == '#') {
+            } else if (token.content.front() == '#') {
                 if (token.content == "#t") {
                     new_item = _repl.m.alloc<lisp_abi::boolean>(true);
                 } else if (token.content == "#f") {
@@ -64,8 +59,15 @@ parser::object_stream_t& parser::parse(const tokenizer::token_stream_t& tokens)
                 }
             }
             
-            if (!new_item) { 
-                new_item = _repl.m.alloc<lisp_abi::symbol>(token.content);
+            if (!new_item) {
+                char* endptr = nullptr;
+                assert(!token.content.empty());
+                float number = std::strtof(token.content.c_str(), &endptr);
+                if (endptr != token.content.c_str()) {
+                    new_item = _repl.m.alloc<lisp_abi::number>(number);
+                } else {
+                    new_item = _repl.m.alloc<lisp_abi::symbol>(token.content);
+                }
             }
             
             _complete_object(new_item);
