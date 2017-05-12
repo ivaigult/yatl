@@ -27,7 +27,7 @@
 (define (assert condition message)
 	(cond
 		(condition ())
-		(#f (error message))
+		(#t (error message))
 	)
 )
 

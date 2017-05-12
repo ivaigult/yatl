@@ -108,6 +108,10 @@ void init_language_core(machine& m) {
     utility::bind_syntax(m,   "quote",[&m](lisp_abi::object* o) { return o; } );
 
     utility::bind_function(m, "not", [&m](lisp_abi::object* o) { return m.alloc<lisp_abi::boolean>(!utility::to_boolean(o)); });
+    utility::bind_function(m, "and", [&m](utility::rest_arguments<std::vector<lisp_abi::object*> > args) { 
+        return m.alloc<lisp_abi::boolean>(std::all_of(args.args.begin(), args.args.end(), utility::to_boolean));
+    });
+
 
     utility::bind_function(m, "boolean?", type_predicate<lisp_abi::object::object_type::boolean> {m});
     utility::bind_function(m, "number?",  type_predicate<lisp_abi::object::object_type::number>  {m});
