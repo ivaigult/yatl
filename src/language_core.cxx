@@ -99,8 +99,8 @@ void init_language_core(machine& m) {
         return list_view.front_pair();
     });
     utility::bind_function(m, "list", [&m](utility::rest_arguments<lisp_abi::pair*> elements) { return elements.args; });
-    utility::bind_function(m, "map", [&m](lisp_abi::native_function& fn, lisp_abi::pair& pair) {
-        utility::constant_list_view list(&pair);
+    utility::bind_function(m, "map", [&m](lisp_abi::native_function& fn, lisp_abi::pair* pair) {
+        utility::constant_list_view list(pair);
         lisp_abi::object* result = nullptr;
         for (utility::constant_list_view::iterator it = list.begin(); it != list.end(); ++it) {
             utility::list_view arg_list(m);
@@ -141,7 +141,17 @@ void init_language_core(machine& m) {
         return result;
     });
 
-    utility::bind_function(m, "print", [&m](lisp_abi::object* o){ std::cout << *o << std::endl; return o; });
+    utility::bind_function(m, "print", [&m](utility::rest_arguments<lisp_abi::pair*> rest) 
+    { 
+        utility::constant_list_view arg_list(rest.args);
+        lisp_abi::object* result = nullptr;
+        for (utility::constant_list_view::iterator it = arg_list.begin(); it != arg_list.end(); ++it) {
+            result = *it;
+            std::cout << *result;
+        }
+        std::cout << std::endl;
+        return result;
+    });
     utility::bind_function(m, "quit",  [&m]() -> lisp_abi::object* { exit(EXIT_SUCCESS); return nullptr; });
     utility::bind_function(m, "exit",  [&m](lisp_abi::number& code) -> lisp_abi::object* { exit(static_cast<int>(code.value)); });
 

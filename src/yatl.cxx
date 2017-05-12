@@ -96,7 +96,7 @@ int main(int argc, char** argv)
         if (found != arg_parser.end()) {
             result = found->second();
         } else {
-            default_arg();
+            result = default_arg();
         }
         switch (result) {
         case parse_result::ok:
