@@ -43,7 +43,7 @@ struct scope_bindings {
 class symbol_space {
 public:
     symbol_space();
-    lisp_abi::object* lookup(const std::string& name) const;
+    lisp_abi::object* lookup(const std::string& name);
     void define(const std::string& name, lisp_abi::object*);
     void undefine(const std::string& name);
     void set(const std::string& name, lisp_abi::object*);
@@ -51,6 +51,7 @@ public:
     void push_scope(scope_bindings&& scope);
     void pop_scope();
 private:
+    scope_bindings::object_map_t::iterator _find_symbol(const std::string name);
     typedef std::vector<scope_bindings> bindings_stack_t;
     bindings_stack_t  _bindings_stack;
 };
