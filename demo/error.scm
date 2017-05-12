@@ -13,8 +13,3 @@
 	print-error
 	do-something-bad
 )
-
-(with-exception-handler
-	print-error
-	(lambda () (error "Fuck!"))
-)
