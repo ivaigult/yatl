@@ -10,4 +10,3 @@
 	;; And so on
 ))
 
-(run-all-tests)

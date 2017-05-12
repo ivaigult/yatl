@@ -30,21 +30,26 @@
 namespace yatl {
 namespace language_core {
 
-template<lisp_abi::object::object_type type>
-struct type_predicate {
-    type_predicate(machine& m)
-        : m(m)
-    {}
-    type_predicate(const type_predicate&) = default;
-    
-    lisp_abi::object* operator()(lisp_abi::object* o) {
-        lisp_abi::boolean* result = m.alloc<lisp_abi::boolean>(false);
-        if (o) {
-            result->value = type == o->type;
-        }
-        return result;
-    }
+struct functor {
+    functor(machine& m) : m(m) {}
+    functor(const functor&) = default;
     machine& m;
+};
+
+template<lisp_abi::object::object_type type>
+struct type_predicate : public functor {
+    using functor::functor;
+    lisp_abi::object* operator()(lisp_abi::object* o) {
+        return m.alloc<lisp_abi::boolean>(o ? type == o->type : false);
+    }
+};
+
+template<typename object_t>
+struct equal_predicate : public functor {
+    using functor::functor;
+    lisp_abi::object* operator()(object_t& l, object_t& r) {
+        return m.alloc<lisp_abi::boolean>(l.value == r.value);
+    }
 };
 
 void init_language_core(machine& m) {
@@ -101,9 +106,6 @@ void init_language_core(machine& m) {
         }
         return nullptr;
     });
-    utility::bind_function(m, "=", [&m](lisp_abi::number& l, lisp_abi::number& r) {
-        return m.alloc<lisp_abi::boolean>(l.value == r.value);
-    });
 
     utility::bind_syntax(m,   "quote",[&m](lisp_abi::object* o) { return o; } );
 
@@ -116,6 +118,13 @@ void init_language_core(machine& m) {
     });
 
     utility::bind_function(m, "eq?", [&m](lisp_abi::object* a, lisp_abi::object* b) { return m.alloc<lisp_abi::boolean>(a == b); });
+    utility::bind_function(m, "boolean=?", equal_predicate<lisp_abi::boolean> {m});
+    utility::bind_function(m, "=",         equal_predicate<lisp_abi::number> {m});
+    utility::bind_function(m, "number=?",  equal_predicate<lisp_abi::number> {m});
+    utility::bind_function(m, "string=?",  equal_predicate<lisp_abi::string> {m});
+    utility::bind_function(m, "symbol=?",  equal_predicate<lisp_abi::symbol> {m});
+    
+    // utility::bind_function(m, "eqv?", [&m](lisp_abi::object* a, lisp_abi::object* b) { });
 
     utility::bind_function(m, "boolean?", type_predicate<lisp_abi::object::object_type::boolean> {m});
     utility::bind_function(m, "number?",  type_predicate<lisp_abi::object::object_type::number>  {m});
