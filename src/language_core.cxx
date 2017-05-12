@@ -53,7 +53,7 @@ void init_language_core(machine& m) {
     });
     utility::bind_syntax(m, "set!",   [&m](lisp_abi::symbol& s, lisp_abi::object* o) {
         lisp_abi::object* result = m.eval(o);
-        m.bindings.define(s.value, result);
+        m.bindings.set(s.value, result);
         return result;
     });
     utility::bind_syntax(m, "let", [&m](std::vector<std::tuple<lisp_abi::symbol&, lisp_abi::object*> > bindings, utility::rest_arguments<lisp_abi::pair*> body) {
