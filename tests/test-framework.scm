@@ -24,6 +24,12 @@
 	)
 )
 
+(define (assert condition message)
+	(cond
+		(condition ())
+		(#f (error message))
+	)
+)
 
 (define (run-all-tests)
 	(map 

@@ -30,6 +30,24 @@
 namespace yatl {
 namespace language_core {
 
+template<lisp_abi::object::object_type type>
+struct type_predicate {
+    type_predicate(machine& m)
+        : m(m)
+    {}
+    type_predicate(const type_predicate&) = default;
+    
+    lisp_abi::object* operator()(lisp_abi::object* o) {
+        lisp_abi::boolean* result = m.alloc<lisp_abi::boolean>(false);
+        if (o) {
+            result->value = type == o->type;
+        }
+
+        return result;
+    }
+    machine& m;
+};
+
 void init_language_core(machine& m) {
     utility::bind_syntax(m, "define", [&m](lisp_abi::object& first, utility::rest_arguments<lisp_abi::pair*> o) -> lisp_abi::object* {
         lisp_abi::object* result = nullptr;
@@ -89,6 +107,12 @@ void init_language_core(machine& m) {
     });
 
     utility::bind_syntax(m,   "quote",[&m](lisp_abi::object* o) { return o; } );
+
+    utility::bind_function(m, "boolean?", type_predicate<lisp_abi::object::object_type::boolean> {m});
+    utility::bind_function(m, "number?",  type_predicate<lisp_abi::object::object_type::number>  {m});
+    utility::bind_function(m, "string?",  type_predicate<lisp_abi::object::object_type::string>  {m});
+    utility::bind_function(m, "symbol?",  type_predicate<lisp_abi::object::object_type::symbol>  {m});
+    utility::bind_function(m, "pair?",    type_predicate<lisp_abi::object::object_type::pair>    {m});
 
     utility::bind_function(m, "eval", [&m](lisp_abi::object* o) { return m.eval(o); });
     utility::bind_function(m, "car",  [&m](lisp_abi::pair&   l) { return l.value.head; });
