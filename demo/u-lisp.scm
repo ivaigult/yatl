@@ -64,9 +64,8 @@
 
 
 (define (_evcon c a)
-  (cond ((_eval (caar c) a)
-         (_eval (cadar c) a))
-        ('t (_evcon (cdr c) a))))
+  (cond ( (equal? (_eval (caar c) a) '()) (_evcon (cdr c)   a))
+        ('t                               (_eval  (cadar c) a))))
 
 (define (_evlis m a)
   (cond ((_null m) '())
@@ -82,3 +81,7 @@
 (_eval '(car '(a b c)) env)
 (_eval '(cdr '(a b c)) env)
 (_eval '(cons 'a '(b c)) env)
+
+;; Conditionals work as well despite the fact that `true` is defined as 't
+;; While `false` is defined as `()`
+(_eval '(cond ('() 'false) ('t 'true) ) env)
