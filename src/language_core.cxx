@@ -122,28 +122,9 @@ void init_language_core(machine& m) {
         return m.alloc<lisp_abi::boolean>(std::any_of(args.args.begin(), args.args.end(), utility::to_boolean));
     });
 
-    utility::bind_function(m, "eq?",  [&m](lisp_abi::object* a, lisp_abi::object* b) { return m.alloc<lisp_abi::boolean>(a == b); });
-    utility::bind_function(m, "eqv?", [&m](lisp_abi::object* a, lisp_abi::object* b) {
-        if (!a && !b)
-            return m.alloc<lisp_abi::boolean>(true);
-        if (!a || !b)
-            return m.alloc<lisp_abi::boolean>(false);
-        if (a->type != b->type)
-            return m.alloc<lisp_abi::boolean>(false);
-
-        if (lisp_abi::boolean* boolean_a = lisp_abi::object_cast<lisp_abi::boolean*>(a))
-            return m.alloc<lisp_abi::boolean>(boolean_a->value == static_cast<lisp_abi::boolean*>(b)->value);
-        if (lisp_abi::number* number_a = lisp_abi::object_cast<lisp_abi::number*>(a))
-            return m.alloc<lisp_abi::boolean>(number_a->value == static_cast<lisp_abi::number*>(b)->value);
-        if (lisp_abi::string* string_a = lisp_abi::object_cast<lisp_abi::string*>(a))
-            return m.alloc<lisp_abi::boolean>(string_a->value == static_cast<lisp_abi::string*>(b)->value);
-        if (lisp_abi::symbol* symbol_a = lisp_abi::object_cast<lisp_abi::symbol*>(a))
-            return m.alloc<lisp_abi::boolean>(symbol_a->value == static_cast<lisp_abi::symbol*>(b)->value);
-        if (lisp_abi::native_function* func_a = lisp_abi::object_cast<lisp_abi::native_function*>(a))
-            return m.alloc<lisp_abi::boolean>(func_a->value == static_cast<lisp_abi::native_function*>(b)->value);
-
-        return m.alloc<lisp_abi::boolean>(a == b);
-    });
+    utility::bind_function(m, "eq?",    [&m](lisp_abi::object* a, lisp_abi::object* b) { return m.alloc<lisp_abi::boolean>(a == b); });
+    utility::bind_function(m, "eqv?",   [&m](lisp_abi::object* a, lisp_abi::object* b) { return m.alloc<lisp_abi::boolean>(utility::equivalent(a, b)); });
+    utility::bind_function(m, "equal?", [&m](lisp_abi::object* a, lisp_abi::object* b) { return m.alloc<lisp_abi::boolean>(utility::equal(a, b));      });
 
     utility::bind_function(m, "boolean=?", binary_predicate<lisp_abi::boolean, std::equal_to> {m});
     utility::bind_function(m, "=",         binary_predicate<lisp_abi::number,  std::equal_to> {m});

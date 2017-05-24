@@ -46,5 +46,45 @@ inline lisp_abi::object* begin(machine& m, lisp_abi::pair* pair) {
 
 }
 
+inline bool equivalent(lisp_abi::object* a, lisp_abi::object* b) {
+    if (!a && !b)
+        return true;
+    if (!a || !b)
+        return false;
+    if (a->type != b->type)
+        return false;
+
+    if (lisp_abi::boolean* boolean_a = lisp_abi::object_cast<lisp_abi::boolean*>(a))
+        return boolean_a->value == static_cast<lisp_abi::boolean*>(b)->value;
+    if (lisp_abi::number* number_a = lisp_abi::object_cast<lisp_abi::number*>(a))
+        return number_a->value == static_cast<lisp_abi::number*>(b)->value;
+    if (lisp_abi::string* string_a = lisp_abi::object_cast<lisp_abi::string*>(a))
+        return string_a->value == static_cast<lisp_abi::string*>(b)->value;
+    if (lisp_abi::symbol* symbol_a = lisp_abi::object_cast<lisp_abi::symbol*>(a))
+        return symbol_a->value == static_cast<lisp_abi::symbol*>(b)->value;
+    if (lisp_abi::native_syntax* func_a = lisp_abi::object_cast<lisp_abi::native_syntax*>(a))
+        return func_a->value == static_cast<lisp_abi::native_syntax*>(b)->value;
+    if (lisp_abi::native_function* func_a = lisp_abi::object_cast<lisp_abi::native_function*>(a))
+        return func_a->value == static_cast<lisp_abi::native_function*>(b)->value;
+
+    return a == b;
+
+}
+
+inline bool equal(lisp_abi::object* a, lisp_abi::object* b) {
+    if (!a && !b)
+        return true;
+    if (!a || !b)
+        return false;
+    if (a->type != b->type)
+        return false;
+    if (lisp_abi::pair* pair_a = lisp_abi::object_cast<lisp_abi::pair*>(a)) {
+        lisp_abi::pair* pair_b = static_cast<lisp_abi::pair*>(b);
+        return equal(pair_a->value.head, pair_b->value.head) && equal(pair_a->value.tail, pair_b->value.tail);
+    }
+
+    return equivalent(a, b);
+}
+
 }
 }
