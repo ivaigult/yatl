@@ -1,3 +1,7 @@
+;; Minimal lisp can be implemented in lisp using only:
+;; `atom`, `car`, `cdr`, `cond`, `cons`, `eq` and `quote`
+
+;; Let's define core functions:
 
 (define (_null? x) (equal? x '()))
 
@@ -23,13 +27,15 @@
                (_pair (cdr x) (cdr y))))))
 
 (define (caar x) (car (car x)))
-(define (caar x) (car (cdr (car x))))
 (define (cadr x) (car (cdr x)))
+(define (cadar x) (car (cdr (car x))))
 (define (caddr x) (car (cdr (cdr x))))
 
 (define (_assoc x y)
   (cond ((equal? (caar y) x) (cadar y))
         ('t (_assoc x (cdr y)))))
+
+;; Having `_eval` implemented, we can evaluate any S-expression
 
 (define (_eval e a)
   (cond
@@ -66,3 +72,10 @@
   (cond ((_null m) '())
         ('t (cons (_eval  (car m) a)
                   (_evlis (cdr m) a)))))
+
+;; Let's try something out
+;; First, we should define a variable for bindings keeping
+(define env '())
+
+;; Core functions should work
+(define )
