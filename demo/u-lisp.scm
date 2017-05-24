@@ -44,8 +44,8 @@
      (cond
        ((equal? (car e) 'quote) (cadr e))
        ((equal? (car e) 'atom)  (atom?  (_eval (cadr e) a)))
-       ((equal? (car e) 'eq)    (equal?    (_eval (cadr e) a)
-                                     (_eval (caddr e) a)))
+       ((equal? (car e) 'eq)    (equal?    (_eval (cadr e)  a)
+                                           (_eval (caddr e) a)))
        ((equal? (car e) 'car)   (car    (_eval (cadr e) a)))
        ((equal? (car e) 'cdr)   (cdr    (_eval (cadr e) a)))
        ((equal? (car e) 'cons)  (cons   (_eval (cadr e) a)
@@ -78,4 +78,7 @@
 (define env '())
 
 ;; Core functions should work
-(define )
+(_eval ''some-symbol env)
+(_eval '(car '(a b c)) env)
+(_eval '(cdr '(a b c)) env)
+(_eval '(cons 'a '(b c)) env)
