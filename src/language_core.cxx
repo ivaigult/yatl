@@ -151,10 +151,10 @@ void init_language_core(machine& m) {
     utility::bind_function(m, "string=?",  binary_predicate<lisp_abi::string,  std::equal_to> {m});
     utility::bind_function(m, "symbol=?",  binary_predicate<lisp_abi::symbol,  std::equal_to> {m});
     
-    utility::bind_function(m, "<",  binary_predicate<lisp_abi::number, std::less>          {m});
-    utility::bind_function(m, ">",  binary_predicate<lisp_abi::number, std::greater>       {m});
-    utility::bind_function(m, "<=", binary_predicate<lisp_abi::number, std::less_equal>    {m});
-    utility::bind_function(m, ">=", binary_predicate<lisp_abi::number, std::greater_equal> {m});
+    utility::bind_function(m, "<",         binary_predicate<lisp_abi::number, std::less>          {m});
+    utility::bind_function(m, ">",         binary_predicate<lisp_abi::number, std::greater>       {m});
+    utility::bind_function(m, "<=",        binary_predicate<lisp_abi::number, std::less_equal>    {m});
+    utility::bind_function(m, ">=",        binary_predicate<lisp_abi::number, std::greater_equal> {m});
     utility::bind_function(m, "string<?",  binary_predicate<lisp_abi::string, std::less>          {m});
     utility::bind_function(m, "string>?",  binary_predicate<lisp_abi::string, std::greater>       {m});
     utility::bind_function(m, "string<=?", binary_predicate<lisp_abi::string, std::less_equal>    {m});
