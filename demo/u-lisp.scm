@@ -55,9 +55,6 @@
        (#t (_eval (cons (_assoc (car e) a)
                         (cdr e))
                   a))))
-	((equal? (caar e) 'label)
-     (_eval (cons (caddar e) (cdr e))
-            (cons (_list (cadar e) (car e)) a)))
     ((equal? (caar e) 'lambda)
      (_eval (caddar e)
             (_append (_pair (cadar e) (_evlis (cdr e) a))
@@ -72,8 +69,10 @@
         ('t (cons (_eval  (car m) a)
                   (_evlis (cdr m) a)))))
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Let's try something out
 ;; First, we should define a variable for bindings keeping
+;; We will need it for lambdas 
 (define env '())
 
 ;; Core functions should work
@@ -86,9 +85,7 @@
 ;; While `false` is defined as `()`
 (_eval '(cond ('() 'false) ('t 'true) ) env)
 
-;; You can create new binding via `label` syntax
-;; and retrieve symbol values in consequent calls
-;; (_eval '((label x '(b c)) (cons 'a x)) env)
-
 ;; You may use lambdas
 (_eval '((lambda (x) (cons 'a x)) '(b c)) env)
+
+;; We bootstrapped the language, hence initial lisp is Turing-complete
