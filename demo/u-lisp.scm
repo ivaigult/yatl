@@ -1,3 +1,6 @@
+;; This example was heavily inspired by Paul Graham blog 
+;; (http://paulgraham.com/lisp.html)
+;; 
 ;; Minimal lisp can be implemented in lisp using only:
 ;; `atom`, `car`, `cdr`, `cond`, `cons`, `eq` and `quote`
 
