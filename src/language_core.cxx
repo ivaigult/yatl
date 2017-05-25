@@ -30,26 +30,29 @@
 namespace yatl {
 namespace language_core {
 
-struct functor {
+class functor {
+protected:
     functor(machine& m) : m(m) {}
     functor(const functor&) = default;
     machine& m;
 };
 
 template<lisp_abi::object::object_type type>
-struct type_predicate : public functor {
-    using functor::functor;
+class type_predicate : public functor {
+public:
+    type_predicate(machine& m) : functor(m) {}
     lisp_abi::object* operator()(lisp_abi::object* o) {
         return m.alloc<lisp_abi::boolean>(o ? type == o->type : false);
     }
 };
 
 template<typename object_t, template <class> class predicate_t>
-struct binary_predicate;
+class binary_predicate;
 
 template<typename value_type_t, lisp_abi::object::object_type type_id, template <class> class predicate_t>
-struct binary_predicate<lisp_abi::custom_object<value_type_t, type_id>, predicate_t> : public functor {
-    using functor::functor;
+class binary_predicate<lisp_abi::custom_object<value_type_t, type_id>, predicate_t> : public functor {
+public:
+    binary_predicate(machine& m) : functor(m) {}
     typedef lisp_abi::custom_object<value_type_t, type_id> object_type;
     lisp_abi::object* operator()(object_type& l, object_type& r) {
         const predicate_t<value_type_t> predicate;
