@@ -3,19 +3,19 @@
 
 ;; Let's define core functions:
 
-(define (_null? x) (equal? x '()))
+(define (_null x) (equal? x '()))
 
 (define (_and x y)
-  (cond (x (cond (y 't) ('t '())))
-        ('t '())))
+  (cond (x (cond (y #t) (#t #f)))
+        (#t #f)))
 
 (define (_not x)
-  (cond (x '())
-        ('t 't)))
+  (cond (x '#f)
+        ('#t '#t)))
 
 (define (_append x y)
   (cond ((_null x) y)
-        ('t (cons (car x) (_append (cdr x) y)))))
+        (#t (cons (car x) (_append (cdr x) y)))))
 
 (define (_list x y)
   (cons x (cons y '())))
@@ -26,14 +26,15 @@
          (cons (_list (car x) (car y))
                (_pair (cdr x) (cdr y))))))
 
-(define (caar x) (car (car x)))
-(define (cadr x) (car (cdr x)))
-(define (cadar x) (car (cdr (car x))))
-(define (caddr x) (car (cdr (cdr x))))
+(define (caar x)   (car (car x)))
+(define (cadr x)   (car (cdr x)))
+(define (cadar x)  (car (cdr (car x))))
+(define (caddr x)  (car (cdr (cdr x))))
+(define (caddar x) (car (cdr (cdr (car x)))))
 
 (define (_assoc x y)
   (cond ((equal? (caar y) x) (cadar y))
-        ('t (_assoc x (cdr y)))))
+        (#t (_assoc x (cdr y)))))
 
 ;; Having `_eval` implemented, we can evaluate any S-expression
 
@@ -51,17 +52,16 @@
        ((equal? (car e) 'cons)  (cons   (_eval (cadr e) a)
                                      (_eval (caddr e) a)))
        ((equal? (car e) 'cond)  (_evcon (cdr e) a))
-       ('t (_eval (cons (_assoc (car e) a)
+       (#t (_eval (cons (_assoc (car e) a)
                         (cdr e))
                   a))))
-    ((equal? (caar e) 'label)
+	((equal? (caar e) 'label)
      (_eval (cons (caddar e) (cdr e))
             (cons (_list (cadar e) (car e)) a)))
     ((equal? (caar e) 'lambda)
      (_eval (caddar e)
             (_append (_pair (cadar e) (_evlis (cdr e) a))
                      a)))))
-
 
 (define (_evcon c a)
   (cond ( (equal? (_eval (caar c) a) '()) (_evcon (cdr c)   a))
@@ -85,3 +85,10 @@
 ;; Conditionals work as well despite the fact that `true` is defined as 't
 ;; While `false` is defined as `()`
 (_eval '(cond ('() 'false) ('t 'true) ) env)
+
+;; You can create new binding via `label` syntax
+;; and retrieve symbol values in consequent calls
+;; (_eval '((label x '(b c)) (cons 'a x)) env)
+
+;; You may use lambdas
+(_eval '((lambda (x) (cons 'a x)) '(b c)) env)
