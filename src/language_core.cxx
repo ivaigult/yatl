@@ -30,21 +30,34 @@
 namespace yatl {
 namespace language_core {
 
-template<lisp_abi::object::object_type type>
-struct type_predicate {
-    type_predicate(machine& m)
-        : m(m)
-    {}
-    type_predicate(const type_predicate&) = default;
-    
-    lisp_abi::object* operator()(lisp_abi::object* o) {
-        lisp_abi::boolean* result = m.alloc<lisp_abi::boolean>(false);
-        if (o) {
-            result->value = type == o->type;
-        }
-        return result;
-    }
+class functor {
+protected:
+    functor(machine& m) : m(m) {}
+    functor(const functor&) = default;
     machine& m;
+};
+
+template<lisp_abi::object::object_type type>
+class type_predicate : public functor {
+public:
+    type_predicate(machine& m) : functor(m) {}
+    lisp_abi::object* operator()(lisp_abi::object* o) {
+        return m.alloc<lisp_abi::boolean>(o ? type == o->type : false);
+    }
+};
+
+template<typename object_t, template <class> class predicate_t>
+class binary_predicate;
+
+template<typename value_type_t, lisp_abi::object::object_type type_id, template <class> class predicate_t>
+class binary_predicate<lisp_abi::custom_object<value_type_t, type_id>, predicate_t> : public functor {
+public:
+    binary_predicate(machine& m) : functor(m) {}
+    typedef lisp_abi::custom_object<value_type_t, type_id> object_type;
+    lisp_abi::object* operator()(object_type& l, object_type& r) {
+        const predicate_t<value_type_t> predicate{};
+        return m.alloc<lisp_abi::boolean>(predicate(l.value, r.value));
+    }
 };
 
 void init_language_core(machine& m) {
@@ -101,9 +114,6 @@ void init_language_core(machine& m) {
         }
         return nullptr;
     });
-    utility::bind_function(m, "=", [&m](lisp_abi::number& l, lisp_abi::number& r) {
-        return m.alloc<lisp_abi::boolean>(l.value == r.value);
-    });
 
     utility::bind_syntax(m,   "quote",[&m](lisp_abi::object* o) { return o; } );
 
@@ -115,6 +125,28 @@ void init_language_core(machine& m) {
         return m.alloc<lisp_abi::boolean>(std::any_of(args.args.begin(), args.args.end(), utility::to_boolean));
     });
 
+    utility::bind_function(m, "eq?",    [&m](lisp_abi::object* a, lisp_abi::object* b) { return m.alloc<lisp_abi::boolean>(a == b); });
+    utility::bind_function(m, "eqv?",   [&m](lisp_abi::object* a, lisp_abi::object* b) { return m.alloc<lisp_abi::boolean>(utility::equivalent(a, b)); });
+    utility::bind_function(m, "equal?", [&m](lisp_abi::object* a, lisp_abi::object* b) { return m.alloc<lisp_abi::boolean>(utility::equal(a, b));      });
+
+    utility::bind_function(m, "boolean=?", binary_predicate<lisp_abi::boolean, std::equal_to> {m});
+    utility::bind_function(m, "=",         binary_predicate<lisp_abi::number,  std::equal_to> {m});
+    utility::bind_function(m, "number=?",  binary_predicate<lisp_abi::number,  std::equal_to> {m});
+    utility::bind_function(m, "string=?",  binary_predicate<lisp_abi::string,  std::equal_to> {m});
+    utility::bind_function(m, "symbol=?",  binary_predicate<lisp_abi::symbol,  std::equal_to> {m});
+    
+    utility::bind_function(m, "<",         binary_predicate<lisp_abi::number, std::less>          {m});
+    utility::bind_function(m, ">",         binary_predicate<lisp_abi::number, std::greater>       {m});
+    utility::bind_function(m, "<=",        binary_predicate<lisp_abi::number, std::less_equal>    {m});
+    utility::bind_function(m, ">=",        binary_predicate<lisp_abi::number, std::greater_equal> {m});
+    utility::bind_function(m, "string<?",  binary_predicate<lisp_abi::string, std::less>          {m});
+    utility::bind_function(m, "string>?",  binary_predicate<lisp_abi::string, std::greater>       {m});
+    utility::bind_function(m, "string<=?", binary_predicate<lisp_abi::string, std::less_equal>    {m});
+    utility::bind_function(m, "string>=?", binary_predicate<lisp_abi::string, std::greater_equal> {m});
+    utility::bind_function(m, "symbol<?",  binary_predicate<lisp_abi::symbol, std::less>          {m});
+    utility::bind_function(m, "symbol>?",  binary_predicate<lisp_abi::symbol, std::greater>       {m});
+    utility::bind_function(m, "symbol<=?", binary_predicate<lisp_abi::symbol, std::less_equal>    {m});
+    utility::bind_function(m, "symbol>=?", binary_predicate<lisp_abi::symbol, std::greater_equal> {m});
 
     utility::bind_function(m, "boolean?", type_predicate<lisp_abi::object::object_type::boolean> {m});
     utility::bind_function(m, "number?",  type_predicate<lisp_abi::object::object_type::number>  {m});

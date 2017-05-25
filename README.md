@@ -4,7 +4,7 @@
 
 _yatl_ is _Scheme_ like lisp interpreter with a user friendly FFI. Any given c++ functor can be bound to the language by one line of code. Consider `car` implementation example:
 ```c++
-bind_function(m, "car",  [&m](lisp_abi::pair&   l) { return l.value.head; });
+bind_function(m, "car",  [&m](lisp_abi::pair& l) { return l.value.head; });
 ```
 
 This single line checks that the first parameter of function is non `nil` list, returs its head and binds this function to the interpreter. Variadic functions are supported aswell:
@@ -17,7 +17,7 @@ bind_function(m, "+", [&m](utility::rest_arguments<std::vector<std::reference_wr
 ```
 Those lines check if arguments are list of numbers and does accumulation using standart libstdcxx functions.
 
-The project is under heavy development, almost nothing is supported. But recently we reached turing-completeness. For more details see: `STATUS.md`.
+The project is under heavy development, almost nothing is supported. The `u-lisp.scm` demo shows that project reached Turing-completeness stage. For more details see: `STATUS.md`.
 
 ## Build
 ```

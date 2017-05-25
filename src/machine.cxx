@@ -54,25 +54,21 @@ lisp_abi::object* machine::eval(lisp_abi::object* object) {
         utility::list_view list_view(*this, list);
 
         lisp_abi::object* head_obj = list_view.front();
-        // @todo tail_obj might be null
+        lisp_abi::object* evaluated_head = eval(head_obj);
         lisp_abi::pair* tail_obj = lisp_abi::object_cast<lisp_abi::pair*>(list->value.tail);
 
-        if (lisp_abi::symbol* sym = lisp_abi::object_cast<lisp_abi::symbol*>(head_obj)) {
-            lisp_abi::object* evaluated_head = eval(sym);
-
-            if (lisp_abi::native_function* callable = lisp_abi::object_cast<lisp_abi::native_function*>(evaluated_head)) {
-                utility::list_view arguments_list(*this);
-                utility::list_view::iterator it = list_view.begin(); ++it;
-                for (; it != list_view.end(); ++it) {
-                    arguments_list.push_back(eval(*it));
-                }
-                return callable->value->eval(arguments_list.front_pair());
-            } else if(lisp_abi::native_syntax* callable = lisp_abi::object_cast<lisp_abi::native_syntax*>(evaluated_head)) {
-                return callable->value->eval(tail_obj);
-            } else {
-                // @todo: evaluated_head might be null
-                throw error::error().format("unable to call ", evaluated_head->type);
+        if (lisp_abi::native_function* callable = lisp_abi::object_cast<lisp_abi::native_function*>(evaluated_head)) {
+            utility::list_view arguments_list(*this);
+            utility::list_view::iterator it = list_view.begin(); ++it;
+            for (; it != list_view.end(); ++it) {
+                arguments_list.push_back(eval(*it));
             }
+            return callable->value->eval(arguments_list.front_pair());
+        } else if(lisp_abi::native_syntax* callable = lisp_abi::object_cast<lisp_abi::native_syntax*>(evaluated_head)) {
+            return callable->value->eval(tail_obj);
+        } else {
+            // @todo: evaluated_head might be null
+            throw error::error().format("unable to call ", evaluated_head->type);
         }
     }
     break;

@@ -25,15 +25,16 @@ function(add_yatl_test test_name)
 			COMMAND ${CMAKE_COMMAND} -E touch ${test_status_file}
 			DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/test-framework.scm ${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.scm
   )
-  add_custom_target(launch_${test_name} DEPENDS ${test_status_file} SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.scm ${CMAKE_CURRENT_SOURCE_DIR}/test-framework.scm)
-  set_target_properties(launch_${test_name} PROPERTIES FOLDER "tests")
+  add_custom_target(${test_name} DEPENDS ${test_status_file} SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.scm)
+  set_target_properties(${test_name} PROPERTIES FOLDER "tests")
   if (NOT TARGET run_all_tests)
     add_custom_target(run_all_tests)
   endif()
-  add_dependencies(run_all_tests launch_${test_name})
+  add_dependencies(run_all_tests ${test_name})
 endfunction()
 
 
-add_yatl_test(list_test)
-add_yatl_test(types_test)
-add_yatl_test(boolean_test)
+add_yatl_test(list-test)
+add_yatl_test(types-test)
+add_yatl_test(boolean-test)
+add_yatl_test(equal-test)

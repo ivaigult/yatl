@@ -23,6 +23,7 @@ project(yatl)
 cmake_minimum_required(VERSION 3.3)
 
 set (CMAKE_CXX_STANDARD 11)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 add_executable(yatl
   src/yatl.cxx
