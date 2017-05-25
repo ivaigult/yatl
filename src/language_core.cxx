@@ -55,7 +55,7 @@ public:
     binary_predicate(machine& m) : functor(m) {}
     typedef lisp_abi::custom_object<value_type_t, type_id> object_type;
     lisp_abi::object* operator()(object_type& l, object_type& r) {
-        const predicate_t<value_type_t> predicate;
+        const predicate_t<value_type_t> predicate{};
         return m.alloc<lisp_abi::boolean>(predicate(l.value, r.value));
     }
 };
