@@ -4,9 +4,8 @@
 	(define (get) counter)
 	(define (increment) (set! counter (+ counter 1)) counter)
 
-	(lambda (interface-fn) (interface-fn))
+	(named-lambda (interface fn) ((eval fn)))
 )
-
 
 (add-test "simple-closure-test" (lambda ()
 	(define counter (make_counter))
