@@ -87,7 +87,7 @@ void init_language_core(machine& m) {
         return result;
     });
     utility::bind_syntax(m, "let", [&m](std::vector<std::tuple<lisp_abi::symbol&, lisp_abi::object*> > bindings, utility::rest_arguments<lisp_abi::pair*> body) {
-        scope_bindings scope = { scope_bindings::scope_type::let };
+        frame scope = { frame::frame_type::let };
         std::for_each(bindings.begin(), bindings.end(), [&scope, &m](std::tuple<lisp_abi::symbol&, lisp_abi::object*>& b)
         { scope.bindings[std::get<0>(b).value] = m.eval(std::get<1>(b)); } );
 

@@ -26,52 +26,52 @@
 #include <cassert>
 
 namespace yatl {
-symbol_space::symbol_space() 
+environment::environment() 
 { 
-    _bindings_stack.push_back({ scope_bindings::scope_type::global });
+    _bindings_stack.push_back({ frame::frame_type::global });
 }
 
-lisp_abi::object* symbol_space::lookup(const std::string& name) {
-    scope_bindings::object_map_t::iterator found = _find_symbol(name);
+lisp_abi::object* environment::lookup(const std::string& name) {
+    frame::object_map_t::iterator found = _find_symbol(name);
     return found->second;
 }
 
-void symbol_space::define(const std::string& name, lisp_abi::object* obj) {
-    assert(!_bindings_stack.empty() && _bindings_stack.front().type == scope_bindings::scope_type::global);
+void environment::define(const std::string& name, lisp_abi::object* obj) {
+    assert(!_bindings_stack.empty() && _bindings_stack.front().type == frame::frame_type::global);
     _bindings_stack.back().bindings[name] = obj;
 }
 
-void symbol_space::undefine(const std::string& name) {
-    assert(!_bindings_stack.empty() && _bindings_stack.front().type == scope_bindings::scope_type::global);
-    scope_bindings& scope = _bindings_stack.back();
-    scope_bindings::object_map_t::iterator found = scope.bindings.find(name);
+void environment::undefine(const std::string& name) {
+    assert(!_bindings_stack.empty() && _bindings_stack.front().type == frame::frame_type::global);
+    frame& scope = _bindings_stack.back();
+    frame::object_map_t::iterator found = scope.bindings.find(name);
     if (scope.bindings.end() != found) {
         scope.bindings.erase(found);
     }
 }
 
-void symbol_space::set(const std::string& name, lisp_abi::object* obj) {
-    scope_bindings::object_map_t::iterator found = _find_symbol(name);
+void environment::set(const std::string& name, lisp_abi::object* obj) {
+    frame::object_map_t::iterator found = _find_symbol(name);
     found->second = obj;
 }
 
-void symbol_space::push_scope(scope_bindings&& scope) {
+void environment::push_scope(frame&& scope) {
     _bindings_stack.push_back(std::move(scope));
 }
 
-void symbol_space::pop_scope() {
-    assert(_bindings_stack.size() > 1 && _bindings_stack.front().type == scope_bindings::scope_type::global);
+void environment::pop_scope() {
+    assert(_bindings_stack.size() > 1 && _bindings_stack.front().type == frame::frame_type::global);
     _bindings_stack.pop_back();
 }
 
-scope_bindings::object_map_t::iterator symbol_space::_find_symbol(const std::string name) {
-    assert(!_bindings_stack.empty() && _bindings_stack.front().type == scope_bindings::scope_type::global);
+frame::object_map_t::iterator environment::_find_symbol(const std::string name) {
+    assert(!_bindings_stack.empty() && _bindings_stack.front().type == frame::frame_type::global);
     for (bindings_stack_t::reverse_iterator it = _bindings_stack.rbegin(); it != _bindings_stack.rend(); ) {
-        scope_bindings::object_map_t::iterator found = it->bindings.find(name);
+        frame::object_map_t::iterator found = it->bindings.find(name);
         if (it->bindings.end() != found) {
             return found;
         }
-        else if (it->type == scope_bindings::scope_type::lambda_closure) {
+        else if (it->type == frame::frame_type::lambda_closure) {
             it = _bindings_stack.rend() - 1;
         }
         else {
