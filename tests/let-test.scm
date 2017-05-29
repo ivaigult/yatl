@@ -34,6 +34,13 @@
     )
 ))
 
+(add-test "let*-test" (lambda ()
+    (define x 100500)
+    (let* ((x 0) (y x))
+        (assert (= x 0) "Unexpected x value")
+        (assert (= y 0) "y should be assigned sequentialy")
+    )
+))
 
 (run-all-tests)
 
