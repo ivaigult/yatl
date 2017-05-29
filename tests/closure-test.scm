@@ -1,5 +1,5 @@
 
-(define (make_counter)
+(define (make-counter)
 	(define counter 0)
 	(define (get) counter)
 	(define (increment) (set! counter (+ counter 1)) counter)
@@ -8,7 +8,7 @@
 )
 
 (add-test "simple-closure-test" (lambda ()
-	(define counter (make_counter))
+	(define counter (make-counter))
 	(assert (= (counter 'get) 0)       "Initial value of counter is not null")
 	(assert (= (counter 'increment) 1) "Increment did't increase the value")
 	(assert (= (counter 'increment) 2) "Increment did't increase the value")
@@ -16,14 +16,30 @@
 ))
 
 (add-test "closure-instance-are-independent" (lambda ()
-	(define counter-a (make_counter))
-	(define counter-b (make_counter))
+	(define counter-a (make-counter))
+	(define counter-b (make-counter))
 	(assert (= (counter-a 'get) 0)       "Initial value of counter is not null")
 	(assert (= (counter-b 'get) 0)       "Initial value of counter is not null")
 	(assert (= (counter-a 'increment) 1) "Increment did't increase the value")
 	(assert (= (counter-b 'increment) 1) "Increment did't increase the value")
 	(assert (= (counter-a 'increment) 2) "Increment did't increase the value")
 	(assert (= (counter-b 'get) 1)       "Closures shouldn't share their state")
+))
+
+(define (make-counter-2)
+	(define counter 0)
+	(define (get) counter)
+	(define (increment) (set! counter (+ counter 1)) counter)
+
+	(increment)
+	(increment)
+	(named-lambda (interface fn) ((eval fn)))
+)
+
+(add-test "closure-was-called-before-return" (lambda ()
+	(define counter (make-counter-2))
+	(assert (= (counter 'get) 2)       "Initial value of counter is not 2")
+	(assert (= (counter 'increment) 3) "Increment did't increase the value")
 ))
 
 (run-all-tests)
