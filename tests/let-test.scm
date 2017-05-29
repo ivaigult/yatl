@@ -26,6 +26,14 @@
     )
 ))
 
+(add-test "let-bindings-assigned-in-parallel" (lambda ()
+    (define x 100500)
+    (let ((x 0) (y x))
+        (assert (= x 0) "Unexpected x value")
+        (assert (= y 100500) "y should be assigned in parallel")
+    )
+))
+
 
 (run-all-tests)
 
