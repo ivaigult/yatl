@@ -76,6 +76,29 @@ private:
     environment& _space;
 };
 
+struct fluid_guard {
+    fluid_guard(environment& space, frame_ptr_type scope)
+        : _space(space)
+        , _orig_values(frame::frame_type::let)
+    {
+        for(const std::pair<std::string, lisp_abi::object*>& name_val: scope->bindings) {
+            const std::string name = name_val.first;
+            _orig_values.bindings[name] = _space.lookup(name);
+            _space.set(name, name_val.second);
+        }
+    }
+
+    ~fluid_guard() {
+        for(const std::pair<std::string, lisp_abi::object*>& name_val: _orig_values.bindings) {
+            _space.set(name_val.first, name_val.second);
+        }
+    }
+
+private:
+    environment& _space;
+    frame        _orig_values;
+};
+
 struct closure_guard {
     closure_guard(environment& space, closure_type& closure)
         : _space(space)

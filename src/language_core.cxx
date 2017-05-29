@@ -94,6 +94,14 @@ void init_language_core(machine& m) {
         scope_guard g(m.bindings, std::move(scope));
         return utility::begin(m, body.args);
     });
+    utility::bind_syntax(m, "fluid-let", [&m](std::vector<std::tuple<lisp_abi::symbol&, lisp_abi::object*> > bindings, utility::rest_arguments<lisp_abi::pair*> body) {
+        frame_ptr_type scope = std::make_shared<frame>(frame::frame_type::let);
+        std::for_each(bindings.begin(), bindings.end(), [&scope, &m](std::tuple<lisp_abi::symbol&, lisp_abi::object*>& b)
+        { scope->bindings[std::get<0>(b).value] = m.eval(std::get<1>(b)); } );
+
+        fluid_guard g(m.bindings, std::move(scope));
+        return utility::begin(m, body.args);
+    });
 
     utility::bind_syntax(m, "let*", [&m](std::vector<std::tuple<lisp_abi::symbol&, lisp_abi::object*> > bindings, utility::rest_arguments<lisp_abi::pair*> body) {
         frame_ptr_type scope = std::make_shared<frame>(frame::frame_type::let);
@@ -103,6 +111,8 @@ void init_language_core(machine& m) {
         { scope->bindings[std::get<0>(b).value] = m.eval(std::get<1>(b)); } );
         return utility::begin(m, body.args);
     });
+
+    
 
 
     utility::bind_syntax(m, "lambda", [&m](std::vector<std::reference_wrapper<lisp_abi::symbol> > signature, utility::rest_arguments<lisp_abi::pair*> body) -> lisp_abi::object* {

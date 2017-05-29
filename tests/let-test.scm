@@ -26,6 +26,19 @@
     )
 ))
 
+
+(define counter 0)
+(define (bump-counter) (set! counter (+ counter 1)))
+
+(add-test "fluid-let-test" (lambda ()
+    (fluid-let ((counter 100))
+        (bump-counter)
+        (assert (= counter 101) "Counter was not bumped")
+    )
+    (assert (= counter 0) "counter was not restored")
+))
+
+
 (add-test "let-bindings-assigned-in-parallel" (lambda ()
     (define x 100500)
     (let ((x 0) (y x))
