@@ -28,7 +28,7 @@
 namespace yatl {
 environment::environment() 
 { 
-    _bindings_stack.push_back({ frame::frame_type::global });
+    _bindings_stack.push_back(std::make_shared<frame>(frame::frame_type::global));
 }
 
 lisp_abi::object* environment::lookup(const std::string& name) {
@@ -37,13 +37,13 @@ lisp_abi::object* environment::lookup(const std::string& name) {
 }
 
 void environment::define(const std::string& name, lisp_abi::object* obj) {
-    assert(!_bindings_stack.empty() && _bindings_stack.front().type == frame::frame_type::global);
-    _bindings_stack.back().bindings[name] = obj;
+    assert(!_bindings_stack.empty() && _bindings_stack.front()->type == frame::frame_type::global);
+    _bindings_stack.back()->bindings[name] = obj;
 }
 
 void environment::undefine(const std::string& name) {
-    assert(!_bindings_stack.empty() && _bindings_stack.front().type == frame::frame_type::global);
-    frame& scope = _bindings_stack.back();
+    assert(!_bindings_stack.empty() && _bindings_stack.front()->type == frame::frame_type::global);
+    frame& scope = *_bindings_stack.back();
     frame::object_map_t::iterator found = scope.bindings.find(name);
     if (scope.bindings.end() != found) {
         scope.bindings.erase(found);
@@ -55,23 +55,23 @@ void environment::set(const std::string& name, lisp_abi::object* obj) {
     found->second = obj;
 }
 
-void environment::push_scope(frame&& scope) {
-    _bindings_stack.push_back(std::move(scope));
+void environment::push_scope(frame_ptr_type scope) {
+    _bindings_stack.push_back(scope);
 }
 
 void environment::pop_scope() {
-    assert(_bindings_stack.size() > 1 && _bindings_stack.front().type == frame::frame_type::global);
+    assert(_bindings_stack.size() > 1 && _bindings_stack.front()->type == frame::frame_type::global);
     _bindings_stack.pop_back();
 }
 
 frame::object_map_t::iterator environment::_find_symbol(const std::string name) {
-    assert(!_bindings_stack.empty() && _bindings_stack.front().type == frame::frame_type::global);
+    assert(!_bindings_stack.empty() && _bindings_stack.front()->type == frame::frame_type::global);
     for (bindings_stack_t::reverse_iterator it = _bindings_stack.rbegin(); it != _bindings_stack.rend(); ) {
-        frame::object_map_t::iterator found = it->bindings.find(name);
-        if (it->bindings.end() != found) {
+        frame::object_map_t::iterator found = (*it)->bindings.find(name);
+        if ((*it)->bindings.end() != found) {
             return found;
         }
-        else if (it->type == frame::frame_type::lambda_closure) {
+        else if ((*it)->type == frame::frame_type::lambda_closure) {
             it = _bindings_stack.rend() - 1;
         }
         else {

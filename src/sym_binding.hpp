@@ -25,6 +25,7 @@
 
 #include <map>
 #include <vector>
+#include <memory>
 
 namespace yatl {
 struct frame {
@@ -34,11 +35,16 @@ struct frame {
 		lambda_args,
 		let,
     };
+    frame(frame_type type) 
+        : type(type) 
+    {}
 
     typedef std::map<std::string, lisp_abi::object*> object_map_t;
 	frame_type   type;
     object_map_t bindings;
 };
+
+typedef std::shared_ptr<frame> frame_ptr_type;
 
 class environment {
 public:
@@ -48,17 +54,18 @@ public:
     void undefine(const std::string& name);
     void set(const std::string& name, lisp_abi::object*);
 
-    void push_scope(frame&& scope);
+    void push_scope(frame_ptr_type scope);
     void pop_scope();
 private:
     frame::object_map_t::iterator _find_symbol(const std::string name);
-    typedef std::vector<frame> bindings_stack_t;
+    typedef std::vector<frame_ptr_type>  bindings_stack_t;
+
     bindings_stack_t  _bindings_stack;
 };
 
 struct scope_guard {
-    scope_guard(environment& space, frame&& scope) : _space(space)
-    { _space.push_scope(std::move(scope)); }
+    scope_guard(environment& space, frame_ptr_type scope) : _space(space)
+    { _space.push_scope(scope); }
     ~scope_guard()
     { _space.pop_scope(); }
 private:

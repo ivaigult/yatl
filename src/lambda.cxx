@@ -55,13 +55,14 @@ lisp_abi::object* lambda::eval(lisp_abi::pair* list) {
         throw error::error().format("too few arguments: ", _arg_names.size(), " expected, ", args.size(), " provided");
     }
 
-    frame function_arguments = { frame::frame_type::lambda_args };
+    frame_ptr_type function_arguments = std::make_shared<frame>(frame::frame_type::lambda_args);
     utility::constant_list_view::iterator it = args.begin();
+
     for (size_t ii = 0; ii < _arg_names.size(); ++ii, ++it) {
-        function_arguments.bindings[_arg_names[ii]] = *it;
+        function_arguments->bindings[_arg_names[ii]] = *it;
     }
     scope_guard g(_m.bindings, std::move(function_arguments));
-    return utility::begin(_m, _body);;
+    return utility::begin(_m, _body);
 }
 
 }
