@@ -66,15 +66,16 @@ void environment::pop_scope() {
     _bindings_stack.pop_back();
 }
 
-std::vector<frame_ptr_type> environment::make_closure() {
-    std::vector<frame_ptr_type> result;
+closure_type environment::make_closure() {
+    closure_type result;
     bindings_stack_t::reverse_iterator rfound = std::find_if(_bindings_stack.rbegin(), _bindings_stack.rend(),
-        [](frame_ptr_type f) { return f->type == frame::frame_type::lambda_closure; });
+        [](frame_ptr_type f) { return f->type == frame::frame_type::lambda_args; });
+
     if (_bindings_stack.rend() == rfound) {
-        result;
+        return result;
     }
-    result.insert(result.end(), rfound, _bindings_stack.rend());
-    return result;
+    result.insert(result.end(), rfound.base() - 1, _bindings_stack.end());
+    return std::move(result);
 }
 
 frame::object_map_t::iterator environment::_find_symbol(const std::string name) {

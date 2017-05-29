@@ -23,6 +23,7 @@
 
 #include "object.hpp"
 
+#include <algorithm>
 #include <map>
 #include <vector>
 #include <memory>
@@ -45,6 +46,7 @@ struct frame {
 };
 
 typedef std::shared_ptr<frame> frame_ptr_type;
+typedef std::vector<frame_ptr_type> closure_type;
 
 class environment {
 public:
@@ -57,7 +59,7 @@ public:
     void push_scope(frame_ptr_type scope);
     void pop_scope();
 
-    std::vector<frame_ptr_type> make_closure();
+    closure_type make_closure();
 private:
     frame::object_map_t::iterator _find_symbol(const std::string name);
     typedef std::vector<frame_ptr_type>  bindings_stack_t;
@@ -72,6 +74,24 @@ struct scope_guard {
     { _space.pop_scope(); }
 private:
     environment& _space;
+};
+
+struct closure_guard {
+    closure_guard(environment& space, closure_type& closure)
+        : _space(space)
+        , _closure(closure)
+    { 
+        _space.push_scope(std::make_shared<frame>(frame::frame_type::lambda_closure));
+        std::for_each(_closure.begin(), _closure.end(), [this](frame_ptr_type s) {_space.push_scope(s); }); 
+    }
+    ~closure_guard()
+    { 
+        std::for_each(_closure.begin(), _closure.end(), [this](frame_ptr_type)   {_space.pop_scope(); }); 
+        _space.pop_scope();
+    }
+private:
+    environment& _space;
+    closure_type& _closure;
 };
 
 }
