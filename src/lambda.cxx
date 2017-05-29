@@ -31,6 +31,7 @@ namespace yatl {
 lambda::lambda(machine& m, std::vector<std::reference_wrapper<lisp_abi::symbol> > signature, lisp_abi::pair* body) 
     : native_function_type("lambda")
     , _m(m)
+    , _closure(m.bindings.make_closure())
     , _body(body)
     , _progn(_body)
 {
@@ -40,6 +41,7 @@ lambda::lambda(machine& m, std::vector<std::reference_wrapper<lisp_abi::symbol> 
 lambda::lambda(machine& m, const std::string& name, std::vector<std::reference_wrapper<lisp_abi::symbol> > signature, lisp_abi::pair* body)
     : native_function_type(name)
     , _m(m)
+    , _closure(m.bindings.make_closure())
     , _body(body)
     , _progn(_body)
 {
@@ -55,13 +57,16 @@ lisp_abi::object* lambda::eval(lisp_abi::pair* list) {
         throw error::error().format("too few arguments: ", _arg_names.size(), " expected, ", args.size(), " provided");
     }
 
-    scope_bindings function_arguments = { scope_bindings::scope_type::lambda_args };
+    frame_ptr_type function_arguments = std::make_shared<frame>(frame::frame_type::lambda_args);
     utility::constant_list_view::iterator it = args.begin();
+
     for (size_t ii = 0; ii < _arg_names.size(); ++ii, ++it) {
-        function_arguments.bindings[_arg_names[ii]] = *it;
+        function_arguments->bindings[_arg_names[ii]] = *it;
     }
+
+    closure_guard c(_m.bindings, _closure);
     scope_guard g(_m.bindings, std::move(function_arguments));
-    return utility::begin(_m, _body);;
+    return utility::begin(_m, _body);
 }
 
 }

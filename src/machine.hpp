@@ -45,7 +45,7 @@ public:
         return result;
     }
 
-    symbol_space bindings;
+    environment bindings;
 private:
     std::vector<lisp_abi::object*>           _allocated_objects;
 };

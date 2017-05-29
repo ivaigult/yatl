@@ -34,6 +34,7 @@ public:
     virtual lisp_abi::object* eval(lisp_abi::pair* list);
 private:
     machine&                    _m;
+    closure_type                _closure;
     std::vector<std::string>    _arg_names;
     lisp_abi::pair*             _body;
     utility::constant_list_view _progn;

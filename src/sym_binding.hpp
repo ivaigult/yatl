@@ -23,46 +23,75 @@
 
 #include "object.hpp"
 
+#include <algorithm>
 #include <map>
 #include <vector>
+#include <memory>
 
 namespace yatl {
-struct scope_bindings {
-    enum class scope_type {
+struct frame {
+    enum class frame_type {
 		global,
         lambda_closure,
 		lambda_args,
 		let,
     };
+    frame(frame_type type) 
+        : type(type) 
+    {}
 
     typedef std::map<std::string, lisp_abi::object*> object_map_t;
-	scope_type   type;
+	frame_type   type;
     object_map_t bindings;
 };
 
-class symbol_space {
+typedef std::shared_ptr<frame> frame_ptr_type;
+typedef std::vector<frame_ptr_type> closure_type;
+
+class environment {
 public:
-    symbol_space();
+    environment();
     lisp_abi::object* lookup(const std::string& name);
     void define(const std::string& name, lisp_abi::object*);
     void undefine(const std::string& name);
     void set(const std::string& name, lisp_abi::object*);
 
-    void push_scope(scope_bindings&& scope);
+    void push_scope(frame_ptr_type scope);
     void pop_scope();
+
+    closure_type make_closure();
 private:
-    scope_bindings::object_map_t::iterator _find_symbol(const std::string name);
-    typedef std::vector<scope_bindings> bindings_stack_t;
+    frame::object_map_t::iterator _find_symbol(const std::string name);
+    typedef std::vector<frame_ptr_type>  bindings_stack_t;
+
     bindings_stack_t  _bindings_stack;
 };
 
 struct scope_guard {
-    scope_guard(symbol_space& space, scope_bindings&& scope) : _space(space)
-    { _space.push_scope(std::move(scope)); }
+    scope_guard(environment& space, frame_ptr_type scope) : _space(space)
+    { _space.push_scope(scope); }
     ~scope_guard()
     { _space.pop_scope(); }
 private:
-    symbol_space& _space;
+    environment& _space;
+};
+
+struct closure_guard {
+    closure_guard(environment& space, closure_type& closure)
+        : _space(space)
+        , _closure(closure)
+    { 
+        _space.push_scope(std::make_shared<frame>(frame::frame_type::lambda_closure));
+        std::for_each(_closure.begin(), _closure.end(), [this](frame_ptr_type s) {_space.push_scope(s); }); 
+    }
+    ~closure_guard()
+    { 
+        std::for_each(_closure.begin(), _closure.end(), [this](frame_ptr_type)   {_space.pop_scope(); }); 
+        _space.pop_scope();
+    }
+private:
+    environment& _space;
+    closure_type& _closure;
 };
 
 }
