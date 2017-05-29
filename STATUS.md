@@ -21,7 +21,8 @@
   * [x] `set!`
   * [x] `let`
   * [x] `let*`
-  * [ ] `fluid-let`
+  * [x] `fluid-let`
+  * [ ] `letrec`
 - [x] Quoting
 - [ ] Quasi quoting
 - [ ] Conditionals
