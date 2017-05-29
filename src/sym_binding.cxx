@@ -23,6 +23,8 @@
 #include "error.hpp"
 #include "function_helpers.hpp"
 
+#include <algorithm>
+
 #include <cassert>
 
 namespace yatl {
@@ -64,17 +66,26 @@ void environment::pop_scope() {
     _bindings_stack.pop_back();
 }
 
+std::vector<frame_ptr_type> environment::make_closure() {
+    std::vector<frame_ptr_type> result;
+    bindings_stack_t::reverse_iterator rfound = std::find_if(_bindings_stack.rbegin(), _bindings_stack.rend(),
+        [](frame_ptr_type f) { return f->type == frame::frame_type::lambda_closure; });
+    if (_bindings_stack.rend() == rfound) {
+        result;
+    }
+    result.insert(result.end(), rfound, _bindings_stack.rend());
+    return result;
+}
+
 frame::object_map_t::iterator environment::_find_symbol(const std::string name) {
     assert(!_bindings_stack.empty() && _bindings_stack.front()->type == frame::frame_type::global);
     for (bindings_stack_t::reverse_iterator it = _bindings_stack.rbegin(); it != _bindings_stack.rend(); ) {
         frame::object_map_t::iterator found = (*it)->bindings.find(name);
         if ((*it)->bindings.end() != found) {
             return found;
-        }
-        else if ((*it)->type == frame::frame_type::lambda_closure) {
+        } else if ((*it)->type == frame::frame_type::lambda_closure) {
             it = _bindings_stack.rend() - 1;
-        }
-        else {
+        } else {
             ++it;
         }
     }

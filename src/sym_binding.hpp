@@ -56,6 +56,8 @@ public:
 
     void push_scope(frame_ptr_type scope);
     void pop_scope();
+
+    std::vector<frame_ptr_type> make_closure();
 private:
     frame::object_map_t::iterator _find_symbol(const std::string name);
     typedef std::vector<frame_ptr_type>  bindings_stack_t;
