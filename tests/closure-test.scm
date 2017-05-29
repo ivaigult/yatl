@@ -15,7 +15,7 @@
 	(assert (= (counter 'get) 2)       "The result of two increments wasn't stored in closure")
 ))
 
-(add-test "closure-instance-are-independent" (lambda ()
+(add-test "closure-instances-are-independent" (lambda ()
 	(define counter-a (make-counter))
 	(define counter-b (make-counter))
 	(assert (= (counter-a 'get) 0)       "Initial value of counter is not null")
@@ -36,7 +36,7 @@
 	(named-lambda (interface fn) ((eval fn)))
 )
 
-(add-test "closure-was-called-before-return" (lambda ()
+(add-test "closure-was-called-before-got-returned" (lambda ()
 	(define counter (make-counter-2))
 	(assert (= (counter 'get) 2)       "Initial value of counter is not 2")
 	(assert (= (counter 'increment) 3) "Increment did't increase the value")
