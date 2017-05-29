@@ -32,4 +32,4 @@ before_script:
 - cd _build
 - cmake ..
 script:
-- cmake --build . -- -j2
+- cmake --build . --target run_all_tests -- -j2
