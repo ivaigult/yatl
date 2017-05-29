@@ -9,10 +9,12 @@
 (define global-x 100500)
 
 (add-test "let-overrides-globals" (lambda ()
-    (let ((x 0))
-        (assert (= x 0) "Unexpected x value")
+    (let ((global-x 0))
+        (assert (= global-x 0) "Unexpected x value")
     )
 ))
+
+
 
 
 (run-all-tests)
