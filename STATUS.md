@@ -15,14 +15,15 @@
 - [ ] Pairs (`(a . b)` doted pairs are unsupported)
 - [ ] Vectors
 ## Special Forms
-- [ ] Lambda expressions (closures are unsupported, no TCO)
-- [ ] Lexical bindings (only `let`, `define` and `set!` are supported)
+- [x] Lambda expressions (no TCO)
+- [ ] Lexical bindings
   * [x] `define`
   * [x] `set!`
   * [x] `let`
-  * [ ] `let*`
+  * [x] `let*`
   * [ ] `fluid-let`
 - [x] Quoting
+- [ ] Quasi quoting
 - [ ] Conditionals
   * [x] `cond`
   * [ ] ...
