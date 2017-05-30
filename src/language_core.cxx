@@ -60,6 +60,34 @@ public:
     }
 };
 
+template<typename object_t, template <class> class accumulate_fn_t>
+class accumulate_functor;
+
+template<typename value_type_t, lisp_abi::object::object_type type_id, template <class> class accumulate_fn_t>
+class accumulate_functor<lisp_abi::custom_object<value_type_t, type_id>, accumulate_fn_t> : public functor {
+public:
+    accumulate_functor(machine& m, value_type_t init) : functor(m), _init(init) {}
+    typedef lisp_abi::custom_object<value_type_t, type_id> object_type;
+    lisp_abi::object* operator()(utility::rest_arguments<std::vector<std::reference_wrapper<object_type> > > values) {
+        const accumulate_fn_t<value_type_t> accumulate_fn{};
+        if (values.args.empty()) {
+            return m.alloc<object_type>(_init);
+        } else if (1 == values.args.size()) {
+            return m.alloc<object_type>(accumulate_fn(_init, values.args.front().get().value));
+        } else {
+            value_type_t result = values.args.front().get().value;
+            std::for_each(values.args.begin() + 1, values.args.end(), [&result, &accumulate_fn](const object_type& o) { result = accumulate_fn(result, o.value);  });
+            return m.alloc<object_type>(result);
+        }
+
+    }
+private:
+    const value_type_t _init;
+};
+
+
+
+
 void init_language_core(machine& m) {
     utility::bind_syntax(m, "define", [&m](lisp_abi::object& first, utility::rest_arguments<lisp_abi::pair*> o) -> lisp_abi::object* {
         lisp_abi::object* result = nullptr;
@@ -197,36 +225,10 @@ void init_language_core(machine& m) {
         return result;
     });
 
-    utility::bind_function(m, "+",     [&m](utility::rest_arguments<std::vector<std::reference_wrapper<lisp_abi::number> > > numbers) {
-        lisp_abi::number* result = m.alloc<lisp_abi::number>(0.0f);
-        std::for_each(numbers.args.begin(), numbers.args.end(), [&result](const lisp_abi::number& n) { result->value += n.value; });
-        return result;
-    });
-    utility::bind_function(m, "-",     [&m](utility::rest_arguments<std::vector<std::reference_wrapper<lisp_abi::number> > > numbers) {
-        lisp_abi::number* result = m.alloc<lisp_abi::number>(0.0f);
-        if (numbers.args.empty())
-            return result;
-        result->value = numbers.args.front().get().value;
-        std::for_each(numbers.args.begin() + 1, numbers.args.end(), [&result](const lisp_abi::number& n) { result->value -= n.value; });
-        return result;
-    });
-    utility::bind_function(m, "*",     [&m](utility::rest_arguments<std::vector<std::reference_wrapper<lisp_abi::number> > > numbers) {
-        lisp_abi::number* result = m.alloc<lisp_abi::number>(1.0f);
-        std::for_each(numbers.args.begin(), numbers.args.end(), [&result](const lisp_abi::number& n) { result->value *= n.value; });
-        return result;
-    });
-    utility::bind_function(m, "/",     [&m](utility::rest_arguments<std::vector<std::reference_wrapper<lisp_abi::number> > > numbers) {
-        lisp_abi::number* result = m.alloc<lisp_abi::number>(1.0f);
-        if (numbers.args.empty()) {
-            return result;
-        } else if (1 == numbers.args.size()) {
-            result->value = 1.0f / numbers.args.front().get().value;
-            return result;
-        }
-        result->value = numbers.args.front().get().value;
-        std::for_each(numbers.args.begin() + 1, numbers.args.end(), [&result](const lisp_abi::number& n) { result->value /= n.value; });
-        return result;
-    });
+    utility::bind_function(m, "+", accumulate_functor<lisp_abi::number, std::plus>      (m, 0.0f));
+    utility::bind_function(m, "-", accumulate_functor<lisp_abi::number, std::minus>     (m, 0.0f));
+    utility::bind_function(m, "*", accumulate_functor<lisp_abi::number, std::multiplies>(m, 1.0f));
+    utility::bind_function(m, "/", accumulate_functor<lisp_abi::number, std::divides>   (m, 1.0f));
 
     utility::bind_function(m, "print", [&m](utility::rest_arguments<lisp_abi::pair*> rest) 
     { 
