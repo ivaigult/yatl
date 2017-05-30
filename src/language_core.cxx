@@ -79,14 +79,10 @@ public:
             std::for_each(values.args.begin() + 1, values.args.end(), [&result, &accumulate_fn](const object_type& o) { result = accumulate_fn(result, o.value);  });
             return m.alloc<object_type>(result);
         }
-
     }
 private:
     const value_type_t _init;
 };
-
-
-
 
 void init_language_core(machine& m) {
     utility::bind_syntax(m, "define", [&m](lisp_abi::object& first, utility::rest_arguments<lisp_abi::pair*> o) -> lisp_abi::object* {
@@ -139,9 +135,6 @@ void init_language_core(machine& m) {
         { scope->bindings[std::get<0>(b).value] = m.eval(std::get<1>(b)); } );
         return utility::begin(m, body.args);
     });
-
-    
-
 
     utility::bind_syntax(m, "lambda", [&m](std::vector<std::reference_wrapper<lisp_abi::symbol> > signature, utility::rest_arguments<lisp_abi::pair*> body) -> lisp_abi::object* {
         lisp_abi::native_function* result = m.alloc<lisp_abi::native_function>(new lambda(m, std::move(signature), body.args));
