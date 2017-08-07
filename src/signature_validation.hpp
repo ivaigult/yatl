@@ -45,8 +45,21 @@ struct is_variadic_arglist<> : public std::false_type {};
 
 namespace detail {
 
-template<typename>
-struct match_list;
+template<typename value_t>
+struct match_list {
+    typedef value_t result_type;
+    result_type operator()(constant_list_view::iterator& it, constant_list_view::iterator) const {
+        lisp_abi::object*   current_obj = *it++;
+        lisp_abi::user_data& user_data = lisp_abi::object_cast<lisp_abi::user_data&>(*current_obj);
+        typedef typename std::remove_reference<value_t>::type interface_type;
+        interface_type* result = nullptr;
+        if (user_data.value->query_interface(interface_type::type_id, reinterpret_cast<void**>(&result))) {
+            return *result;
+        } else {
+            throw error::error().format("Something went wrong");
+        }
+    }
+};
 
 template<typename value_t>
 struct match_list<std::reference_wrapper<value_t> > : public match_list<value_t&> {};

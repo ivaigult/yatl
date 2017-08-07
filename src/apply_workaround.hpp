@@ -67,7 +67,7 @@ struct apply_helper<result_t(class_t::*)(args_t...), ::std::tuple<tuple_args_t..
     template<size_t... s>
     static result_t do_apply(sequence<s...>, function_t func, ::std::tuple<tuple_args_t...>& args)
     {
-        return ApplyToInstance(func, ::std::forward<tuple_args_t>(::std::get<s>(args))...);
+        return call_member_fn(func, ::std::forward<tuple_args_t>(::std::get<s>(args))...);
     }
 };
 
