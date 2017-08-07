@@ -81,11 +81,11 @@ struct pair_type {
     object* tail;
 };
 
-typedef custom_object<std::string, object::object_type::symbol>          symbol;
-typedef custom_object<std::string, object::object_type::string>          string;
-typedef custom_object<bool, object::object_type::boolean>         boolean;
-typedef custom_object<float, object::object_type::number>          number;
-typedef custom_object<pair_type, object::object_type::pair>            pair;
+typedef custom_object<std::string, object::object_type::symbol> symbol;
+typedef custom_object<std::string, object::object_type::string> string;
+typedef custom_object<bool, object::object_type::boolean>       boolean;
+typedef custom_object<float, object::object_type::number>       number;
+typedef custom_object<pair_type, object::object_type::pair>     pair;
 
 struct native_function_type {
     native_function_type(std::string name) : name(name) {}
