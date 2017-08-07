@@ -25,10 +25,10 @@ namespace yatl {
 
 struct output_port {
     virtual ~output_port() {}
-    virtual void write_string(lisp_abi::string& string) = 0;
-    virtual void write(lisp_abi::object& obj) = 0;
-    virtual void display(lisp_abi::object& obj) = 0;
-    virtual void new_line() = 0;
+    virtual lisp_abi::object* write_string(lisp_abi::string& string) = 0;
+    virtual lisp_abi::object* write(lisp_abi::object& obj) = 0;
+    virtual lisp_abi::object* display(lisp_abi::object& obj) = 0;
+    virtual lisp_abi::object* new_line() = 0;
 
     static uint32_t type_id;
 };

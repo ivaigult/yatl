@@ -28,17 +28,21 @@
 namespace yatl {
 
 struct console_output_port_impl : public output_port {
-    virtual void write_string(lisp_abi::string& string) {
+    virtual lisp_abi::object* write_string(lisp_abi::string& string) {
         std::cout << string.value << std::endl;
+        return nullptr;
     }
-    virtual void write(lisp_abi::object& obj) {
+    virtual lisp_abi::object* write(lisp_abi::object& obj) {
         std::cout << obj << std::endl;
+        return nullptr;
     }
-    virtual void display(lisp_abi::object& obj) {
+    virtual lisp_abi::object* display(lisp_abi::object& obj) {
         std::cout << obj << std::endl;
+        return nullptr;
     }
-    virtual void new_line() {
+    virtual lisp_abi::object* new_line() {
         std::cout << std::endl;
+        return nullptr;
     }
 
     static uint32_t type_id;
