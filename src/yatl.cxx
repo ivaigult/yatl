@@ -36,7 +36,7 @@ enum class parse_result {
 
 int main(int argc, char** argv)
 {
-    size_t arg_counter = 1;
+    int arg_counter = 1;
     std::istream* istream = &std::cin;
     std::ostream* ostream = &std::cout;
     std::ifstream script_file;
