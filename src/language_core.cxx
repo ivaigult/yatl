@@ -263,7 +263,15 @@ void init_language_core(machine& m) {
 
     register_type<io::output_port>(m);
     utility::bind_function(m, "create-console-output-port", [&m]() { return io::create_console_output_port(m); });
-    utility::bind_function(m, "output-port-display", &io::output_port::display);
+
+    utility::bind_function(m, "output-port-write-string",    &io::output_port::write_string);
+    utility::bind_function(m, "output-port-write-substring", &io::output_port::write_substring);
+    utility::bind_function(m, "output-port-write",           &io::output_port::write);
+    utility::bind_function(m, "output-port-display",         &io::output_port::display);
+    utility::bind_function(m, "output-port-newline",         &io::output_port::newline);
+    utility::bind_function(m, "output-port-fresh-line",      &io::output_port::fresh_line);
+    utility::bind_function(m, "output-port-write-line",      &io::output_port::write_line);
+    utility::bind_function(m, "output-port-flush-output",    &io::output_port::flush_output);
 }
 
 }

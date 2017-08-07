@@ -28,10 +28,17 @@ namespace io {
 
 struct output_port {
     virtual ~output_port() {}
+
+    // @todo: implement me, once chars are supported
+    // virtual lisp_abi::object* write_char() = 0;
     virtual lisp_abi::object* write_string(lisp_abi::string& string) = 0;
-    virtual lisp_abi::object* write(lisp_abi::object& obj) = 0;
-    virtual lisp_abi::object* display(lisp_abi::object& obj) = 0;
-    virtual lisp_abi::object* new_line() = 0;
+    virtual lisp_abi::object* write_substring(lisp_abi::string& string, lisp_abi::number& start, lisp_abi::number& end) = 0;
+    virtual lisp_abi::object* write(lisp_abi::object* obj) = 0;
+    virtual lisp_abi::object* display(lisp_abi::object* obj) = 0;
+    virtual lisp_abi::object* newline() = 0;
+    virtual lisp_abi::object* fresh_line() = 0;
+    virtual lisp_abi::object* write_line(lisp_abi::object* obj) = 0;
+    virtual lisp_abi::object* flush_output() = 0;
 
     static uint32_t type_id;
 };

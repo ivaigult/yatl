@@ -11,6 +11,8 @@ template<typename implementation_t, typename... interfaces_t>
 struct user_data_type_impl : public implementation_t, public lisp_abi::user_data_type
 {
 public:
+    using implementation_t::implementation_t;
+
     virtual bool query_interface(uint32_t type_id, void** obj) {
         return qi_impl<interfaces_t...>(type_id, obj);
     }
