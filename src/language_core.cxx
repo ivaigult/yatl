@@ -23,6 +23,8 @@
 #include "machine.hpp"
 #include "lambda.hpp"
 #include "internal_helpers.hpp"
+#include "register_type.hpp"
+#include "port.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -258,6 +260,9 @@ void init_language_core(machine& m) {
         }
         return result;
     });
+
+    register_type<output_port>(m);
+    utility::bind_function(m, "output-port-display", &output_port::display);
 }
 
 }

@@ -46,8 +46,10 @@ public:
     }
 
     environment bindings;
+    uint32_t alloc_type_id();
 private:
     std::vector<lisp_abi::object*>           _allocated_objects;
+    uint32_t                                 _type_id_cnt;
 };
 
 }

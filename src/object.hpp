@@ -81,11 +81,11 @@ struct pair_type {
     object* tail;
 };
 
-typedef custom_object<std::string, object::object_type::symbol> symbol;
-typedef custom_object<std::string, object::object_type::string> string;
-typedef custom_object<bool, object::object_type::boolean>       boolean;
-typedef custom_object<float, object::object_type::number>       number;
-typedef custom_object<pair_type, object::object_type::pair>     pair;
+typedef custom_object<std::string, object::object_type::symbol>  symbol;
+typedef custom_object<std::string, object::object_type::string>  string;
+typedef custom_object<bool,        object::object_type::boolean> boolean;
+typedef custom_object<float,       object::object_type::number>  number;
+typedef custom_object<pair_type,   object::object_type::pair>    pair;
 
 struct native_function_type {
     native_function_type(std::string name) : name(name) {}
@@ -96,6 +96,14 @@ struct native_function_type {
 
 typedef custom_object<native_function_type*, object::object_type::native_function> native_function;
 typedef custom_object<native_function_type*, object::object_type::native_syntax>   native_syntax;
-typedef custom_object<void*,                 object::object_type::user_data>       user_data;
+
+struct user_data_type {
+    virtual ~user_data_type() {}
+    virtual bool query_interface(uint32_t type_id, void** obj) = 0;
+    const char* name;
+};
+
+
+typedef custom_object<user_data_type*, object::object_type::user_data> user_data;
 }
 }

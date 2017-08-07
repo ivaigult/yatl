@@ -44,6 +44,8 @@ add_executable(yatl
   src/object_io.cxx
   src/parser.cxx
   src/parser.hpp
+  src/port.cxx
+  src/port.hpp
   src/repl.cxx
   src/repl.hpp
   src/signature_validation.hpp
