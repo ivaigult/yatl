@@ -45,6 +45,7 @@ struct is_variadic_arglist<> : public std::false_type {};
 
 namespace detail {
 
+// @todo: make it safer, do separate specialization for lisp interfaces
 template<typename value_t>
 struct match_list {
     typedef value_t result_type;

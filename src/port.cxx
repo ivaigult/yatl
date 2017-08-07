@@ -22,12 +22,13 @@
 #include "port.hpp"
 #include "object_io.hpp"
 #include "register_type.hpp"
+#include "machine.hpp"
 
 #include <iostream>
 
 namespace yatl {
-
-struct console_output_port_impl : public output_port {
+namespace io {
+struct console_output_port_impl : public io::output_port {
     virtual lisp_abi::object* write_string(lisp_abi::string& string) {
         std::cout << string.value << std::endl;
         return nullptr;
@@ -48,6 +49,15 @@ struct console_output_port_impl : public output_port {
     static uint32_t type_id;
 };
 
+uint32_t output_port::type_id = 0;
+
 typedef user_data_type_impl<console_output_port_impl, output_port> console_output_port;
 
+lisp_abi::object* create_console_output_port(machine& m) {
+    lisp_abi::user_data* result = m.alloc<lisp_abi::user_data>();
+    result->value = new console_output_port();
+    return result;
+}
+
+}
 }

@@ -22,6 +22,9 @@
 #include "object.hpp"
 
 namespace yatl {
+class machine;
+
+namespace io {
 
 struct output_port {
     virtual ~output_port() {}
@@ -33,4 +36,7 @@ struct output_port {
     static uint32_t type_id;
 };
 
+lisp_abi::object* create_console_output_port(machine& m);
+
+}
 }

@@ -54,18 +54,18 @@ struct apply_helper<function_t, ::std::tuple<args_t...> > {
 template<typename class_t, typename result_t, typename... args_t, typename... tuple_args_t>
 struct apply_helper<result_t(class_t::*)(args_t...), ::std::tuple<tuple_args_t...> >
 {
-    typedef typename gen_index_sequence<sizeof...(args_t)>::type sequence_type;
+    typedef typename gen_index_sequence<sizeof...(tuple_args_t)>::type sequence_type;
     typedef result_t result_type;
     typedef result_t(class_t::*function_t)(args_t...);
 
     template<typename other_class_t, typename... other_args_t>
-    static result_t call_member_fn(function_t function, other_class_t* obj, other_args_t&&... args)
+    result_t call_member_fn(function_t function, other_class_t& obj, other_args_t&&... args)
     {
-        return (obj->*function)(::std::forward<other_args_t>(args)...);
+        return (obj.*function)(::std::forward<other_args_t>(args)...);
     }
 
     template<size_t... s>
-    static result_t do_apply(sequence<s...>, function_t func, ::std::tuple<tuple_args_t...>& args)
+    result_t do_apply(sequence<s...>, function_t func, ::std::tuple<tuple_args_t...>& args)
     {
         return call_member_fn(func, ::std::forward<tuple_args_t>(::std::get<s>(args))...);
     }

@@ -261,8 +261,9 @@ void init_language_core(machine& m) {
         return result;
     });
 
-    register_type<output_port>(m);
-    utility::bind_function(m, "output-port-display", &output_port::display);
+    register_type<io::output_port>(m);
+    utility::bind_function(m, "create-console-output-port", [&m]() { return io::create_console_output_port(m); });
+    utility::bind_function(m, "output-port-display", &io::output_port::display);
 }
 
 }
