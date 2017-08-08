@@ -27,7 +27,9 @@ namespace language_core {
 void init_language_core(machine& m);
 }
 
-machine::machine() {
+machine::machine() 
+    : _type_id_cnt(0)
+{
     language_core::init_language_core(*this);
 }
 
@@ -76,6 +78,10 @@ lisp_abi::object* machine::eval(lisp_abi::object* object) {
         break;
     }
     return nullptr;
+}
+
+uint32_t machine::alloc_type_id() {
+    return ++_type_id_cnt;
 }
 
 }

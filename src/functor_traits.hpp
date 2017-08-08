@@ -49,11 +49,15 @@ struct functor_traits<result_t(*)(args_t...)> : public functor_traits<result_t(a
 
 template<typename class_t, typename result_t, typename... args_t>
 struct functor_traits<result_t(class_t::*)(args_t...)> : public functor_traits<result_t(class_t&, args_t...)>
-{};
+{
+    typedef result_t(class_t::*callable_type)(args_t...);
+};
 
 template<typename class_t, typename result_t, typename... args_t>
 struct functor_traits<result_t(class_t::*)(args_t...) const> : public functor_traits<result_t(class_t&, args_t...)>
-{};
+{
+    typedef result_t(class_t::*callable_type)(args_t...) const;
+};
 
 template<typename functor_t>
 struct functor_traits {

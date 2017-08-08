@@ -38,27 +38,7 @@ public:
         , _parser(*this) 
     {}
 
-    int exec() {
-        std::string line;
-        int error_code = EXIT_SUCCESS;
-        for (std::istream& in : _input_streams) {
-            for (; std::getline(in, line); ) {
-                try {
-                    const tokenizer::token_stream_t& tokens = _tokenizer.tokenize(line);
-                    parser::object_stream_t objects = _parser.parse(tokens);
-                    for (lisp_abi::object* o : objects) {
-                        auto result = m.eval(o);
-                        _out << *result << std::endl;
-                    }
-                }
-                catch (error::error& e) {
-                    _err << e.what() << std::endl;
-                    error_code = EXIT_FAILURE;
-                }
-            }
-        }
-        return error_code;
-    }
+    int exec();
 
     machine       m;
 private:
