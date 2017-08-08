@@ -261,6 +261,15 @@ void init_language_core(machine& m) {
         return result;
     });
 
+    register_type<io::input_port>(m);
+    utility::bind_function(m, "create-console-input-port", [&m]() { return io::create_console_input_port(m); });
+    utility::bind_function(m, "open-input-file", [&m](lisp_abi::string& filename) { return io::open_input_file(m, filename); });
+
+    utility::bind_function(m, "input-port-read", &io::input_port::read);
+    utility::bind_function(m, "input-port-eof?", &io::input_port::is_eof);
+    utility::bind_function(m, "input-port-read-string", &io::input_port::read_string);
+    utility::bind_function(m, "input-port-read-line", &io::input_port::read_line);
+
     register_type<io::output_port>(m);
     utility::bind_function(m, "create-console-output-port", [&m]() { return io::create_console_output_port(m); });
     utility::bind_function(m, "open-output-file",           [&m](lisp_abi::string& filename) { return io::open_output_file(m, filename); });

@@ -31,6 +31,43 @@
 namespace yatl {
 namespace io {
 
+class input_port_impl : public io::input_port {
+public:
+    input_port_impl(machine& m, std::istream& is)
+        : _m(m)
+        , _is(is)
+    {}
+
+    virtual lisp_abi::object* read()
+    {
+        // @todo: this will be painfull to implement,
+        // parser and tokenizer are needed here
+        return nullptr;
+    }
+
+    virtual lisp_abi::object* is_eof()
+    {
+        return _m.alloc<lisp_abi::boolean>(_is.eof());
+    }
+
+    virtual lisp_abi::object* read_string()
+    {
+        lisp_abi::string* result = _m.alloc<lisp_abi::string>();
+        _is >> result->value;
+        return result;
+    }
+
+    virtual lisp_abi::object* read_line()
+    {
+        lisp_abi::string* result = _m.alloc<lisp_abi::string>();
+        std::getline(_is, result->value);
+        return result;
+    }
+protected:
+    machine&      _m;
+    std::istream& _is;
+};
+
 class output_port_impl : public io::output_port {
 public:
     output_port_impl(std::ostream& os)
@@ -111,6 +148,21 @@ template<>
 class stream_holder<void>
 {};
 
+struct stdin_port_impl : public stream_holder<void>, public input_port_impl
+{
+    stdin_port_impl(machine& m)
+        : stream_holder<void>()
+        , input_port_impl(m, std::cin)
+    {}
+};
+
+struct file_input_port_impl : public stream_holder<std::ifstream>, public input_port_impl
+{
+    file_input_port_impl(machine& m, lisp_abi::string& filename)
+        : stream_holder<std::ifstream>(filename.value)
+        , input_port_impl(m, _stream)
+    {}
+};
 
 struct stdout_port_impl : public stream_holder<void>, public output_port_impl
 {
@@ -128,8 +180,23 @@ struct file_output_port_impl : public stream_holder<std::ofstream>, public outpu
     {}
 };
 
+typedef user_data_type_impl<stdin_port_impl,      input_port>   console_input_port;
+typedef user_data_type_impl<file_input_port_impl, input_port>   file_input_port;
+
 typedef user_data_type_impl<stdout_port_impl,      output_port> console_output_port;
 typedef user_data_type_impl<file_output_port_impl, output_port> file_output_port;
+
+lisp_abi::object* create_console_input_port(machine& m) {
+    lisp_abi::user_data* result = m.alloc<lisp_abi::user_data>();
+    result->value = new console_input_port(m);
+    return result;
+}
+
+lisp_abi::object* open_input_file(machine& m, lisp_abi::string& filename) {
+    lisp_abi::user_data* result = m.alloc<lisp_abi::user_data>();
+    result->value = new file_input_port(m, filename);
+    return result;
+}
 
 lisp_abi::object* create_console_output_port(machine& m) {
     lisp_abi::user_data* result = m.alloc<lisp_abi::user_data>();
@@ -143,7 +210,9 @@ lisp_abi::object* open_output_file(machine& m, lisp_abi::string& filename) {
     return result;
 }
 
+
 uint32_t output_port::type_id = 0;
+uint32_t input_port::type_id = 0;
 
 }
 }
