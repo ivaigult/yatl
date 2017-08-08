@@ -26,12 +26,14 @@
 #include "machine.hpp"
 
 #include <iostream>
+#include <fstream>
 
 namespace yatl {
 namespace io {
 
-struct stream_output_port_impl : public io::output_port {
-    stream_output_port_impl(std::ostream& os)
+class output_port_impl : public io::output_port {
+public:
+    output_port_impl(std::ostream& os)
         : _os(os)
     {}
 
@@ -90,19 +92,58 @@ struct stream_output_port_impl : public io::output_port {
         _os << std::flush;
         return nullptr;
     }
-
+private:
     std::ostream& _os;
 };
 
-uint32_t output_port::type_id = 0;
+template<typename stream_t>
+class stream_holder {
+public:
+    template<typename... args_t>
+    stream_holder(args_t&&... args) 
+        : _stream(std::forward<args_t>(args)...)
+    {}
+protected:
+    stream_t _stream;
+};
 
-typedef user_data_type_impl<stream_output_port_impl, output_port> console_output_port;
+template<>
+class stream_holder<void>
+{};
+
+
+struct stdout_port_impl : public stream_holder<void>, public output_port_impl
+{
+    stdout_port_impl()
+        : stream_holder<void>()
+        , output_port_impl(std::cout)
+    {}
+};
+
+struct file_output_port_impl : public stream_holder<std::ofstream>, public output_port_impl
+{
+    file_output_port_impl(lisp_abi::string& filename)
+        : stream_holder<std::ofstream>(filename.value)
+        , output_port_impl(_stream)
+    {}
+};
+
+typedef user_data_type_impl<stdout_port_impl,      output_port> console_output_port;
+typedef user_data_type_impl<file_output_port_impl, output_port> file_output_port;
 
 lisp_abi::object* create_console_output_port(machine& m) {
     lisp_abi::user_data* result = m.alloc<lisp_abi::user_data>();
-    result->value = new console_output_port(std::cout);
+    result->value = new console_output_port();
     return result;
 }
+
+lisp_abi::object* open_output_file(machine& m, lisp_abi::string& filename) {
+    lisp_abi::user_data* result = m.alloc<lisp_abi::user_data>();
+    result->value = new file_output_port(filename);
+    return result;
+}
+
+uint32_t output_port::type_id = 0;
 
 }
 }

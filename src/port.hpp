@@ -26,6 +26,16 @@ class machine;
 
 namespace io {
 
+struct input_port {
+    // @todo: implement me, once chars are supported
+    virtual lisp_abi::object* read_char() = 0;
+    virtual lisp_abi::object* peek_char() = 0;
+    virtual lisp_abi::object* is_char_ready() = 0;
+    virtual lisp_abi::object* read() = 0;
+    virtual lisp_abi::object* is_eof() = 0;
+    virtual lisp_abi::object* read_string() = 0;
+};
+
 struct output_port {
     virtual ~output_port() {}
 
@@ -44,6 +54,7 @@ struct output_port {
 };
 
 lisp_abi::object* create_console_output_port(machine& m);
+lisp_abi::object* open_output_file(machine& m, lisp_abi::string& filename);
 
 }
 }

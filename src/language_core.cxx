@@ -263,6 +263,7 @@ void init_language_core(machine& m) {
 
     register_type<io::output_port>(m);
     utility::bind_function(m, "create-console-output-port", [&m]() { return io::create_console_output_port(m); });
+    utility::bind_function(m, "open-output-file",           [&m](lisp_abi::string& filename) { return io::open_output_file(m, filename); });
 
     utility::bind_function(m, "output-port-write-string",    &io::output_port::write_string);
     utility::bind_function(m, "output-port-write-substring", &io::output_port::write_substring);
