@@ -35,7 +35,7 @@ public:
         , _out(out)
         , _err(err)
         , _tokenizer(*this)
-        , _parser(*this) 
+        , _parser(m) 
     {}
 
     int exec();
