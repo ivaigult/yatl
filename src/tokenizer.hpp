@@ -42,11 +42,16 @@ public:
 
     typedef std::vector<token> token_stream_t;
 
-    const token_stream_t& tokenize(std::string line);
+    void add_char(token_stream_t& tokens, char sym);
     
+    const token_stream_t& tokenize(std::string line);
 private:
-    void _emit_token(token& token);
-
+    void _emit_token(token_stream_t& token_stream, token& token);
     token_stream_t _token_stream;
+    tokenizer::token _current_token = {};
+    bool _parsing_string = false;
+    bool _parsing_comment = false;
+    bool _escape = false;
+
 };
 }

@@ -29,64 +29,73 @@
 
 namespace yatl {
 
-void tokenizer::_emit_token(token& token) {
+void tokenizer::_emit_token(token_stream_t& token_stream, token& token) {
     if (token.content.empty())
         return;
-    _token_stream.push_back(token);
+    token_stream.push_back(token);
     token = {};
 }
 
+void tokenizer::add_char(token_stream_t& tokens, char sym) {
+    if (_parsing_string) {
+	if (sym == '\\' && !_escape) {
+	    _escape = true;
+	    return;
+	} else if (sym == '\"' && !_escape) {
+	    _parsing_string = false;
+	    tokens.push_back(_current_token);
+	    _current_token = {};
+	    return;
+	}
+	_current_token.content += sym;
+	_escape = false;
+	return;
+    }
+
+    if (_parsing_comment) {
+	if (sym == '\n') {
+	    _parsing_comment = false;
+	}
+	return;
+    }
+
+    if (sym == '(') {
+	_emit_token(tokens, _current_token);
+	tokens.push_back({tokenizer::token_type::left_bracket, "(" });
+	return;
+    } else if (sym == ')') {
+	_emit_token(tokens, _current_token);
+	tokens.push_back({tokenizer::token_type::right_bracket, ")" });
+	return;
+    } else if (sym == '\'') {
+	_emit_token(tokens, _current_token);
+	tokens.push_back({ tokenizer::token_type::apostrophe, "\'" });
+	return;
+    } else if (sym == ';') {
+	_emit_token(tokens, _current_token);
+	_parsing_comment = true;
+	return;
+    } else if (sym == '\"') {
+	_emit_token(tokens, _current_token);
+	_parsing_string = true;
+	_current_token.type = tokenizer::token_type::string;
+	return;
+    } else if (std::isspace(sym)) {
+	_emit_token(tokens, _current_token);
+	return;
+    }
+
+    _current_token.type = tokenizer::token_type::symbols;
+    _current_token.content += sym;
+}
+    
 const tokenizer::token_stream_t& tokenizer::tokenize(std::string line) {
     _token_stream.clear();
     // @todo: handle multiline tokens
-    tokenizer::token current_token = {};
-    bool parsing_string = false;
-    bool escape = false;
     for (char sym : line) {
-        if (parsing_string) {
-            if (sym == '\\' && !escape) {
-                escape = true;
-                continue;
-            } else if (sym == '\"' && !escape) {
-                parsing_string = false;
-                _token_stream.push_back(current_token);
-                current_token = {};
-                continue;
-            }
-            current_token.content += sym;
-            escape = false;
-            continue;
-        }
-
-        if (sym == '(') {
-            _emit_token(current_token);
-            _token_stream.push_back({tokenizer::token_type::left_bracket, "(" });
-            continue;
-        } else if (sym == ')') {
-            _emit_token(current_token);
-            _token_stream.push_back({tokenizer::token_type::right_bracket, ")" });
-            continue;
-        } else if (sym == '\'') {
-            _emit_token(current_token);
-            _token_stream.push_back({ tokenizer::token_type::apostrophe, "\'" });
-            continue;
-        } else if (sym == ';') {
-            _emit_token(current_token);
-            break;
-        } else if (sym == '\"') {
-            _emit_token(current_token);
-            parsing_string = true;
-            current_token.type = tokenizer::token_type::string;
-            continue;
-        } else if (std::isspace(sym)) {
-            _emit_token(current_token);
-            continue;
-        }
-
-        current_token.type = tokenizer::token_type::symbols;
-        current_token.content += sym;
+	add_char(_token_stream, sym);
     }
-    _emit_token(current_token);
+    add_char(_token_stream, '\n');
     return _token_stream;
 }
 
