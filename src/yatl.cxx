@@ -34,6 +34,17 @@ enum class parse_result {
     error
 };
 
+const char repl_soruce[] = {
+    #include <repl.inl>
+};
+
+struct memory_buffer : std::streambuf
+{
+    memory_buffer(const char* begin, const char* end) {
+        this->setg((char*)begin, (char*)begin, (char*)end);
+    }
+};
+
 int main(int argc, char** argv)
 {
     int arg_counter = 1;
@@ -109,6 +120,9 @@ int main(int argc, char** argv)
     }
 done_parsing:;
     std::vector<std::reference_wrapper<std::istream> > streams;
+    memory_buffer mb(repl_soruce, repl_soruce + sizeof(repl_soruce));
+    std::istream bootstrap_stream(&mb);
+    streams.push_back(bootstrap_stream);
     if (preload_file) {
         streams.push_back(preload_file);
     }
