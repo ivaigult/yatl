@@ -34,7 +34,6 @@ public:
         : _input_streams(streams)
         , _out(out)
         , _err(err)
-        , _tokenizer(*this)
         , _parser(m) 
     {}
 

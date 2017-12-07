@@ -24,8 +24,6 @@
 #include <string>
 
 namespace yatl {
-class repl;
-
 class tokenizer {
 public:
     enum class token_type {
@@ -44,12 +42,11 @@ public:
 
     typedef std::vector<token> token_stream_t;
 
-    tokenizer(repl& repl) : _repl(repl) {}
     const token_stream_t& tokenize(std::string line);
+    
 private:
     void _emit_token(token& token);
 
     token_stream_t _token_stream;
-    repl&          _repl;
 };
 }
