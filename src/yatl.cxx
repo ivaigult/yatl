@@ -28,104 +28,38 @@
 #include <functional>
 #include <map>
 
-enum class parse_result {
-    ok,
-    stop,
-    error
-};
 
 const char repl_soruce[] = {
     #include <repl.inl>
 };
 
-struct memory_buffer : std::streambuf
-{
-    memory_buffer(const char* begin, const char* end) {
-        this->setg((char*)begin, (char*)begin, (char*)end);
+namespace yatl {
+namespace language_core {
+void init_language_core(machine& m);
+}
+}
+
+int bootstrap(const char* src, size_t size) {
+    yatl::machine m;
+    yatl::language_core::init_language_core(m);
+    
+    yatl::tokenizer tokenizer;
+    yatl::parser parser(m);
+
+    yatl::tokenizer::token_stream_t tokens;
+    
+    for(size_t ii = 0; ii < size; ++ii) {
+	tokenizer.add_char(tokens, src[ii]);
+	yatl::parser::object_stream_t objects = parser.parse(tokens);
+	tokens.clear();
+	for (yatl::lisp_abi::object* o : objects) {
+	    m.eval(o);
+	}
     }
-};
+    return 0;
+}
 
 int main(int argc, char** argv)
 {
-    int arg_counter = 1;
-    std::istream* istream = &std::cin;
-    std::ostream* ostream = &std::cout;
-    std::ifstream script_file;
-    std::ifstream preload_file;
-    std::string   expression;
-    std::istringstream expression_stream;
-    std::ofstream dev_null;
-
-    auto print_help = [&argv]() -> parse_result {
-        std::cerr << "Usage: " << argv[0] << " [script_path] [script_args]" << std::endl;
-        std::cerr << "       " << argv[0] << " [-e|--expr] expression" << std::endl;
-        return parse_result::error;
-    };
-
-    auto set_expression = [&]() {
-        const char* expression_str = argv[++arg_counter];
-        expression = expression_str? expression_str : "";
-        expression_stream.str(expression);
-        istream = &expression_stream;
-        return parse_result::stop;
-    };
-
-    auto set_preload_file = [&]() {
-        const char* preload_file_name = argv[++arg_counter];
-        preload_file_name = preload_file_name ? preload_file_name : "";
-        preload_file.open(preload_file_name);
-        if (!preload_file) {
-            std::cerr << "Unable to open " << argv[arg_counter] << std::endl;
-            return parse_result::error;
-        }
-        return parse_result::ok;
-    };
-
-    auto default_arg = [&]() {
-        script_file.open(argv[arg_counter]);
-        if (!script_file) {
-            std::cerr << "Unable to open " << argv[arg_counter] << std::endl;
-            return parse_result::error;
-        }
-        istream = &script_file;
-        ostream = &dev_null;
-        return parse_result::stop;
-    };
-
-    std::map<std::string, std::function<parse_result(void)> > arg_parser = {   
-        {"-h",         print_help },
-        { "--help",    print_help },
-        {"-e",         set_expression },
-        { "--expr",    set_expression },
-        { "-p",        set_preload_file },
-        { "--preload", set_preload_file },
-    };
-
-    for (; arg_counter < argc; ++arg_counter) {
-        parse_result result = parse_result::ok;
-        auto found = arg_parser.find(argv[arg_counter]);
-        if (found != arg_parser.end()) {
-            result = found->second();
-        } else {
-            result = default_arg();
-        }
-        switch (result) {
-        case parse_result::ok:
-            continue;
-        case parse_result::stop:
-            goto done_parsing;
-        case parse_result::error:
-            exit(EXIT_FAILURE);
-        }
-    }
-done_parsing:;
-    std::vector<std::reference_wrapper<std::istream> > streams;
-    memory_buffer mb(repl_soruce, repl_soruce + sizeof(repl_soruce));
-    std::istream bootstrap_stream(&mb);
-    streams.push_back(bootstrap_stream);
-    if (preload_file) {
-        streams.push_back(preload_file);
-    }
-    streams.push_back(*istream);
-    return yatl::repl(streams, *ostream, std::cerr).exec();
+    return bootstrap(repl_soruce, sizeof(repl_soruce));
 }

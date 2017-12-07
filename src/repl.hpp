@@ -38,7 +38,6 @@ public:
     {}
 
     int exec();
-
     machine       m;
 private:
     std::vector<std::reference_wrapper<std::istream> > _input_streams;

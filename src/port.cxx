@@ -65,6 +65,7 @@ public:
     }
 protected:
     machine&      _m;
+    
     std::istream& _is;
 };
 

@@ -23,15 +23,9 @@
 #include "list_view.hpp"
 
 namespace yatl {
-namespace language_core {
-void init_language_core(machine& m);
-}
-
 machine::machine() 
     : _type_id_cnt(0)
-{
-    language_core::init_language_core(*this);
-}
+{}
 
 lisp_abi::object* machine::eval(lisp_abi::object* object) {
     using namespace lisp_abi;
