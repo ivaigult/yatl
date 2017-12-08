@@ -264,7 +264,11 @@ void init_language_core(machine& m) {
             utility::list_view arg_list(m);
             arg_list.push_back(e.raise_obj);
             result = handler.value->eval(arg_list.front_pair());
-        }
+        } catch (const error::error& e) {
+	    utility::list_view arg_list(m);
+	    arg_list.push_back(m.alloc<lisp_abi::string>(e.what()));
+	    result = handler.value->eval(arg_list.front_pair());
+	}
         return result;
     });
 
