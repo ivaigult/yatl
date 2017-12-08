@@ -1,3 +1,5 @@
+(load-file "test-framework.scm")
+
 (define true-objs '(#t 0 1 "" "str" 'sym ()))
 (define false-objs '(#f))
 

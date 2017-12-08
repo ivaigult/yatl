@@ -1,3 +1,5 @@
+(load-file "test-framework.scm")
+
 (add-test "cons-test" (lambda ()
 	(cons 1 ())
 	(cons 1 '(2))

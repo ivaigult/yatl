@@ -1,3 +1,5 @@
+(load-file "test-framework.scm")
+
 (add-test "eq-test" (lambda ()
 	(define foo "foo")
 	(define bar foo)

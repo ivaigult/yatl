@@ -166,6 +166,25 @@ void init_language_core(machine& m, int argc, char** argv) {
         return nullptr;
     });
 
+    utility::bind_syntax(m, "do", [&m](std::vector<std::tuple<lisp_abi::symbol&, lisp_abi::object*, lisp_abi::object*> > bindings,
+				       lisp_abi::object* condition,
+				       utility::rest_arguments<lisp_abi::pair*> body) -> lisp_abi::object* {
+        frame_ptr_type scope = std::make_shared<frame>(frame::frame_type::let);
+	std::for_each(bindings.begin(), bindings.end(), [&scope, &m](std::tuple<lisp_abi::symbol&, lisp_abi::object*, lisp_abi::object*>& b) {
+	    scope->bindings[std::get<0>(b).value] = m.eval(std::get<1>(b));
+	});
+
+	scope_guard g(m.bindings, std::move(scope));
+	lisp_abi::object* result = nullptr;
+	for(;utility::to_boolean(m.eval(condition)); ) {
+	    result = utility::begin(m, body.args);
+	    std::for_each(bindings.begin(), bindings.end(), [&scope, &m](std::tuple<lisp_abi::symbol&, lisp_abi::object*, lisp_abi::object*>& b) {
+	        m.eval(std::get<2>(b));
+	    });
+	}
+	return result;
+    });
+
     utility::bind_syntax(m, "forever", [&m](utility::rest_arguments<lisp_abi::pair*> body) -> lisp_abi::object* {
         for(;;) {
 	    utility::begin(m, body.args);

@@ -24,8 +24,15 @@
     (repl-exec)
 )
 
-(define (load-file)
-    (print "load-file")
+(define (load-file file)
+    (do ((keep-loading #t '())
+	 (scm-file (open-input-file file) '()))
+	keep-loading
+
+	(define read-obj (input-port-read scm-file))
+	(define eval-obj (eval read-obj))
+	(set! keep-loading (not (input-port-eof? scm-file)))
+    )
 )
 
 (define (yatl-main)
@@ -38,7 +45,7 @@
         (set! arg-counter (+ arg-counter 1))
     ) yatl.argv)
     (cond
-        ((not (equal? files-to-load '())) (load-file))
+        ((not (equal? files-to-load '())) (load-file (car files-to-load)))
 	(#t                               (repl)))
 )
 
