@@ -24,6 +24,8 @@
 #include "object_cast.hpp"
 #include "register_type.hpp"
 #include "machine.hpp"
+#include "tokenizer.hpp"
+#include "parser.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -36,13 +38,26 @@ public:
     input_port_impl(machine& m, std::istream& is)
         : _m(m)
         , _is(is)
+	, _parser(m)
     {}
 
     virtual lisp_abi::object* read()
     {
-        // @todo: this will be painfull to implement,
-        // parser and tokenizer are needed here
-        return nullptr;
+	yatl::tokenizer::token_stream_t tokens;
+	yatl::parser::object_stream_t objects;
+	char sym = '\0';
+	_is.get(sym);
+	for(; _is && objects.empty(); _is.get(sym)) {
+	    _tokenizer.add_char(tokens, sym);
+	    objects = _parser.parse(tokens);
+	    tokens.clear();
+	}
+
+	if (objects.empty()) {
+	    return nullptr;
+	} else {
+	    return objects.front();
+	}
     }
 
     virtual lisp_abi::object* is_eof()
@@ -65,7 +80,8 @@ public:
     }
 protected:
     machine&      _m;
-    
+    tokenizer     _tokenizer;
+    parser        _parser;
     std::istream& _is;
 };
 

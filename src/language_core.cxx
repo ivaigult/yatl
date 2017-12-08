@@ -158,6 +158,13 @@ void init_language_core(machine& m) {
         return nullptr;
     });
 
+    utility::bind_syntax(m, "forever", [&m](utility::rest_arguments<lisp_abi::pair*> body) -> lisp_abi::object* {
+        for(;;) {
+	    utility::begin(m, body.args);
+	}
+	return nullptr;
+    });
+
     utility::bind_syntax(m,   "quote",[&m](lisp_abi::object* o) { return o; } );
 
     utility::bind_function(m, "not", [&m](lisp_abi::object* o) { return m.alloc<lisp_abi::boolean>(!utility::to_boolean(o)); });
