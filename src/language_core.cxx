@@ -166,6 +166,7 @@ void init_language_core(machine& m, int argc, char** argv) {
         return nullptr;
     });
 
+    // @todo: iteration should be optional
     utility::bind_syntax(m, "do", [&m](std::vector<std::tuple<lisp_abi::symbol&, lisp_abi::object*, lisp_abi::object*> > bindings,
 				       lisp_abi::object* condition,
 				       utility::rest_arguments<lisp_abi::pair*> body) -> lisp_abi::object* {
