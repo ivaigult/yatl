@@ -1,7 +1,6 @@
 (define std-in (create-console-input-port))
 (define std-out (create-console-output-port))
 
-
 (define (repl-iter)
     (output-port-write-string std-out "yatl> ")
     (let* ((read-obj (input-port-read std-in))

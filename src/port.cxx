@@ -46,8 +46,8 @@ public:
 	yatl::tokenizer::token_stream_t tokens;
 	yatl::parser::object_stream_t objects;
 	char sym = '\0';
-	_is.get(sym);
-	for(; _is && objects.empty(); _is.get(sym)) {
+	for(; _is && objects.empty(); ) {
+	    _is.get(sym);
 	    _tokenizer.add_char(tokens, sym);
 	    objects = _parser.parse(tokens);
 	    tokens.clear();
