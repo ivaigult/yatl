@@ -21,8 +21,25 @@
                 repl-on-error
 	        repl-iter))
     )
-    repl-exec
+    (repl-exec)
 )
 
-((repl))
+(define (load-file)
+    (print "load-file")
+)
 
+(define (yatl-main)
+    (define arg-counter 0)
+    (define files-to-load '())
+
+    (map (lambda (arg)
+        (cond
+            ((< 0 arg-counter) (set! files-to-load (cons arg files-to-load))))
+        (set! arg-counter (+ arg-counter 1))
+    ) yatl.argv)
+    (cond
+        ((not (equal? files-to-load '())) (load-file))
+	(#t                               (repl)))
+)
+
+(yatl-main)
