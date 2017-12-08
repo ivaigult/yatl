@@ -86,7 +86,15 @@ private:
     const value_type_t _init;
 };
 
-void init_language_core(machine& m) {
+void init_language_core(machine& m, int argc, char** argv) {
+    {
+	utility::list_view lisp_argv(m, nullptr);
+	for(int ii = 0; ii < argc; ++ii) {
+	    lisp_argv.push_back(m.alloc<lisp_abi::string>(argv[ii]));	
+	}
+	m.bindings.define("yatl.argv", lisp_argv.front_pair());
+    }
+    
     utility::bind_syntax(m, "define", [&m](lisp_abi::object& first, utility::rest_arguments<lisp_abi::pair*> o) -> lisp_abi::object* {
         lisp_abi::object* result = nullptr;
         if (lisp_abi::symbol* sym = lisp_abi::object_cast<lisp_abi::symbol*>(&first)) {

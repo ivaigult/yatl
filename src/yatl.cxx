@@ -37,21 +37,21 @@ const char repl_soruce[] = {
 
 namespace yatl {
 namespace language_core {
-void init_language_core(machine& m);
+void init_language_core(machine& m, int argc, char** argv);
 }
 }
 
-int bootstrap(const char* src, size_t size) {
+int bootstrap(int argc, char** argv) {
     yatl::machine m;
-    yatl::language_core::init_language_core(m);
+    yatl::language_core::init_language_core(m, argc, argv);
     
     yatl::tokenizer tokenizer;
     yatl::parser parser(m);
 
     yatl::tokenizer::token_stream_t tokens;
     
-    for(size_t ii = 0; ii < size; ++ii) {
-	tokenizer.add_char(tokens, src[ii]);
+    for(size_t ii = 0; ii < sizeof(repl_soruce); ++ii) {
+	tokenizer.add_char(tokens, repl_soruce[ii]);
 	yatl::parser::object_stream_t objects = parser.parse(tokens);
 	tokens.clear();
 	for (yatl::lisp_abi::object* o : objects) {
@@ -63,5 +63,5 @@ int bootstrap(const char* src, size_t size) {
 
 int main(int argc, char** argv)
 {
-    return bootstrap(repl_soruce, sizeof(repl_soruce));
+    return bootstrap(argc, argv);
 }
