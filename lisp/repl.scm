@@ -2,7 +2,12 @@
 (define std-out (create-console-output-port))
 
 (forever
-    (define obj (input-port-read std-in))
-    (print (eval obj))
+    (output-port-write-string std-out "yatl> ")
+    (let* ((read-obj (input-port-read std-in))
+	   (eval-obj (eval read-obj)))
+        (output-port-write-string std-out "$     ")
+        (output-port-write std-out eval-obj)
+        (output-port-newline std-out)
+    )
 )
 
