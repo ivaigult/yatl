@@ -50,8 +50,6 @@ add_executable(yatl
     src/parser.hpp
     src/port.cxx
     src/port.hpp
-    src/repl.cxx
-    src/repl.hpp
     src/signature_validation.hpp
     src/sym_binding.cxx
     src/sym_binding.hpp

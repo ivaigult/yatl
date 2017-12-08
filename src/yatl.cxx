@@ -20,7 +20,9 @@
  */
 
 
-#include "repl.hpp"
+#include "machine.hpp"
+#include "tokenizer.hpp"
+#include "parser.hpp"
 
 #include <iostream>
 #include <fstream>
