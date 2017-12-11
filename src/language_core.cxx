@@ -326,6 +326,7 @@ void init_language_core(machine& m, int argc, char** argv) {
 	    objects.clear();
 	    tokens.clear();
 	}
+	return nullptr;
     });
 
     register_type<io::input_port>(m);
