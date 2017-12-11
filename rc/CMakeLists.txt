@@ -18,29 +18,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-function(add_yatl_test test_name)
-    set(test_status_file "${CMAKE_CURRENT_BINARY_DIR}/${test_name}.ok")
-    add_custom_command(OUTPUT ${test_status_file}
-        COMMAND $<TARGET_FILE:yatl> ${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.scm
-	COMMAND ${CMAKE_COMMAND} -E touch ${test_status_file}
-	DEPENDS
-	    ${CMAKE_CURRENT_SOURCE_DIR}/test-framework.scm
-	    ${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.scm
-	    $<TARGET_FILE:yatl>
-	WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-	)
-    add_custom_target(${test_name} ALL DEPENDS ${test_status_file} SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/${test_name}.scm)
-    set_target_properties(${test_name} PROPERTIES FOLDER "tests")
-    if (NOT TARGET run_all_tests)
-	add_custom_target(run_all_tests)
-    endif()
-    add_dependencies(run_all_tests ${test_name})
+add_executable(rc rc.cxx)
+
+function(compile_resource src dst)
+    
+    add_custom_command(OUTPUT ${dst}
+	COMMAND $<TARGET_FILE:rc> ${CMAKE_CURRENT_SOURCE_DIR}/${src} ${CMAKE_CURRENT_BINARY_DIR}/${dst}
+	DEPENDS $<TARGET_FILE:rc> ${CMAKE_CURRENT_SOURCE_DIR}/${src})
+    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/${dst}
+	PROPERTIES GENERATED TRUE) 
 endfunction()
-
-
-add_yatl_test(list-test)
-add_yatl_test(types-test)
-add_yatl_test(boolean-test)
-add_yatl_test(equal-test)
-add_yatl_test(closure-test)
-add_yatl_test(let-test)

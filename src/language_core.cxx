@@ -21,6 +21,8 @@
 
 #include "function_helpers.hpp"
 #include "machine.hpp"
+#include "tokenizer.hpp"
+#include "parser.hpp"
 #include "lambda.hpp"
 #include "internal_helpers.hpp"
 #include "register_type.hpp"
@@ -28,6 +30,8 @@
 
 #include <algorithm>
 #include <cassert>
+#include <fstream>
+#include <sstream>
 
 namespace yatl {
 namespace language_core {
@@ -86,7 +90,15 @@ private:
     const value_type_t _init;
 };
 
-void init_language_core(machine& m) {
+void init_language_core(machine& m, int argc, char** argv) {
+    {
+	utility::list_view lisp_argv(m, nullptr);
+	for(int ii = 0; ii < argc; ++ii) {
+	    lisp_argv.push_back(m.alloc<lisp_abi::string>(argv[ii]));	
+	}
+	m.bindings.define("yatl.argv", lisp_argv.front_pair());
+    }
+    
     utility::bind_syntax(m, "define", [&m](lisp_abi::object& first, utility::rest_arguments<lisp_abi::pair*> o) -> lisp_abi::object* {
         lisp_abi::object* result = nullptr;
         if (lisp_abi::symbol* sym = lisp_abi::object_cast<lisp_abi::symbol*>(&first)) {
@@ -156,6 +168,33 @@ void init_language_core(machine& m) {
             }
         }
         return nullptr;
+    });
+
+    // @todo: iteration should be optional
+    utility::bind_syntax(m, "do", [&m](std::vector<std::tuple<lisp_abi::symbol&, lisp_abi::object*, lisp_abi::object*> > bindings,
+				       lisp_abi::object* condition,
+				       utility::rest_arguments<lisp_abi::pair*> body) -> lisp_abi::object* {
+        frame_ptr_type scope = std::make_shared<frame>(frame::frame_type::let);
+	std::for_each(bindings.begin(), bindings.end(), [&scope, &m](std::tuple<lisp_abi::symbol&, lisp_abi::object*, lisp_abi::object*>& b) {
+	    scope->bindings[std::get<0>(b).value] = m.eval(std::get<1>(b));
+	});
+
+	scope_guard g(m.bindings, std::move(scope));
+	lisp_abi::object* result = nullptr;
+	for(;utility::to_boolean(m.eval(condition)); ) {
+	    result = utility::begin(m, body.args);
+	    std::for_each(bindings.begin(), bindings.end(), [&scope, &m](std::tuple<lisp_abi::symbol&, lisp_abi::object*, lisp_abi::object*>& b) {
+	        m.eval(std::get<2>(b));
+	    });
+	}
+	return result;
+    });
+
+    utility::bind_syntax(m, "forever", [&m](utility::rest_arguments<lisp_abi::pair*> body) -> lisp_abi::object* {
+        for(;;) {
+	    utility::begin(m, body.args);
+	}
+	return nullptr;
     });
 
     utility::bind_syntax(m,   "quote",[&m](lisp_abi::object* o) { return o; } );
@@ -257,8 +296,37 @@ void init_language_core(machine& m) {
             utility::list_view arg_list(m);
             arg_list.push_back(e.raise_obj);
             result = handler.value->eval(arg_list.front_pair());
-        }
+        } catch (const error::error& e) {
+	    utility::list_view arg_list(m);
+	    arg_list.push_back(m.alloc<lisp_abi::string>(e.what()));
+	    result = handler.value->eval(arg_list.front_pair());
+	}
         return result;
+    });
+
+    utility::bind_function(m, "load-file", [&m](lisp_abi::string& s) -> lisp_abi::object* {
+	std::ifstream file(s);
+	if (!file.good()) {
+	    std::stringstream msg_stream;
+	    msg_stream << "File " << s << " not found";
+	    throw error::runtime_error(m, m.alloc<lisp_abi::string>(msg_stream.str()));
+	}
+	    
+	tokenizer t;
+	parser p(m);
+	char sym = '\0';
+	yatl::tokenizer::token_stream_t tokens;
+	yatl::parser::object_stream_t objects;
+	for(;file.get(sym);) {
+	    t.add_char(tokens, sym);
+	    objects = p.parse(tokens);
+	    for (yatl::lisp_abi::object* o : objects) {
+		m.eval(o);
+	    }
+	    objects.clear();
+	    tokens.clear();
+	}
+	return nullptr;
     });
 
     register_type<io::input_port>(m);

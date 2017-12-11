@@ -79,6 +79,9 @@ closure_type environment::make_closure() {
 }
 
 frame::object_map_t::iterator environment::_find_symbol(const std::string name) {
+    if (name == "run-test") {
+	std::cout << "run-test" << std::endl;
+    }
     assert(!_bindings_stack.empty() && _bindings_stack.front()->type == frame::frame_type::global);
     for (bindings_stack_t::reverse_iterator it = _bindings_stack.rbegin(); it != _bindings_stack.rend(); ) {
         frame::object_map_t::iterator found = (*it)->bindings.find(name);

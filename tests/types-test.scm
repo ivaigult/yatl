@@ -1,3 +1,5 @@
+(load-file "test-framework.scm")
+
 (add-test "type-predicates-test" (lambda ()
 	(assert (boolean? #t) "#t is boolean")
 	(assert (symbol? 'sym) "sym is symbol")

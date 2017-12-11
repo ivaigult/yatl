@@ -1,3 +1,5 @@
+(load-file "test-framework.scm")
+
 (add-test "let-test" (lambda ()
     (let ((x 0) (y 1) (z 2))
         (assert (= x 0) "Unexpected x value")

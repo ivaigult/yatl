@@ -29,12 +29,12 @@
 #include <stack>
 
 namespace yatl {
-class repl;
+class machine;
 class parser 
 {
 public:
-    parser(repl& repl) 
-        : _repl(repl)
+    parser(machine& m) 
+        : _machine(m)
     {}
 
     typedef std::vector<lisp_abi::object*> object_stream_t;
@@ -45,7 +45,7 @@ private:
     object_stream_t                _object_stream;
     std::stack<utility::list_view> _list_stack;
     std::stack<lisp_abi::pair*>    _quote_stack;
-    repl& _repl;
+    machine& _machine;
 };
 
 }

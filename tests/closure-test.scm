@@ -1,3 +1,4 @@
+(load-file "test-framework.scm")
 
 (define (make-counter)
 	(define counter 0)
