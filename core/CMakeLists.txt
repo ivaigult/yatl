@@ -18,17 +18,39 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-project(yatl)
+include(scm2cxx)
 
-cmake_minimum_required(VERSION 3.3)
+add_scm_library(yatl_core STATIC
+    apply_workaround.hpp
+    error.cxx
+    error.hpp
+    function_helpers.hpp
+    functor_traits.hpp
+    internal_helpers.hpp
+    lambda.cxx
+    lambda.hpp
+    language_core.cxx
+    lisp_abi.hpp
+    list_view.hpp
+    machine.cxx
+    machine.hpp
+    object.hpp
+    object_cast.hpp
+    object_io.cxx
+    object_io.hpp
+    parser.cxx
+    parser.hpp
+    port.cxx
+    port.hpp
+    register_type.hpp
+    signature_validation.hpp
+    sym_binding.cxx
+    sym_binding.hpp
+    tokenizer.cxx
+    tokenizer.hpp
+    # scm sources
+    scm/repl.scm
+)
 
-set (CMAKE_CXX_STANDARD 11)
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules")
-
-add_subdirectory(core)
-add_subdirectory(rc)
-add_subdirectory(interpreter)
-add_subdirectory(tests)
+target_include_directories(yatl_core PUBLIC .)
 

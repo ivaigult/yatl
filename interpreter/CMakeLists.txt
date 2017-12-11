@@ -18,17 +18,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-project(yatl)
 
-cmake_minimum_required(VERSION 3.3)
+add_executable(yatl yatl.cxx)
+target_link_libraries(yatl yatl_core)
 
-set (CMAKE_CXX_STANDARD 11)
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules")
-
-add_subdirectory(core)
-add_subdirectory(rc)
-add_subdirectory(interpreter)
-add_subdirectory(tests)
-
+set_target_properties(yatl
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
