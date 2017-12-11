@@ -63,8 +63,7 @@ lisp_abi::object* machine::eval(lisp_abi::object* object) {
         } else if(lisp_abi::native_syntax* callable = lisp_abi::object_cast<lisp_abi::native_syntax*>(evaluated_head)) {
             return callable->value->eval(tail_obj);
         } else {
-            // @todo: evaluated_head might be null
-            throw error::error().format("unable to call ", evaluated_head->type);
+	    error::error().format("unable to call ", evaluated_head);
         }
     }
     break;

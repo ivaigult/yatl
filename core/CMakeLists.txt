@@ -18,5 +18,39 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-add_executable(rc rc.cxx)
+include(scm2cxx)
+
+add_scm_library(yatl_core STATIC
+    apply_workaround.hpp
+    error.cxx
+    error.hpp
+    function_helpers.hpp
+    functor_traits.hpp
+    internal_helpers.hpp
+    lambda.cxx
+    lambda.hpp
+    language_core.cxx
+    lisp_abi.hpp
+    list_view.hpp
+    machine.cxx
+    machine.hpp
+    object.hpp
+    object_cast.hpp
+    object_io.cxx
+    object_io.hpp
+    parser.cxx
+    parser.hpp
+    port.cxx
+    port.hpp
+    register_type.hpp
+    signature_validation.hpp
+    sym_binding.cxx
+    sym_binding.hpp
+    tokenizer.cxx
+    tokenizer.hpp
+    # scm sources
+    scm/repl.scm
+)
+
+target_include_directories(yatl_core PUBLIC .)
 

@@ -34,8 +34,33 @@
 #include <sstream>
 
 namespace yatl {
+namespace scm {
+extern const char repl[];
+extern size_t repl_size;
+}
+}
+
+namespace yatl {
 namespace language_core {
 
+int bootstrap(yatl::machine& m, int argc, char** argv) {
+    yatl::tokenizer tokenizer;
+    yatl::parser parser(m);
+
+    yatl::tokenizer::token_stream_t tokens;
+    
+    for(size_t ii = 0; ii < yatl::scm::repl_size; ++ii) {
+	tokenizer.add_char(tokens, yatl::scm::repl[ii]);
+	yatl::parser::object_stream_t objects = parser.parse(tokens);
+	tokens.clear();
+	for (yatl::lisp_abi::object* o : objects) {
+	    m.eval(o);
+	}
+    }
+    return 0;
+}
+    
+    
 class functor {
 protected:
     functor(machine& m) : m(m) {}
@@ -90,7 +115,7 @@ private:
     const value_type_t _init;
 };
 
-void init_language_core(machine& m, int argc, char** argv) {
+int init_language_core(machine& m, int argc, char** argv) {
     {
 	utility::list_view lisp_argv(m, nullptr);
 	for(int ii = 0; ii < argc; ++ii) {
@@ -350,6 +375,8 @@ void init_language_core(machine& m, int argc, char** argv) {
     utility::bind_function(m, "output-port-fresh-line",      &io::output_port::fresh_line);
     utility::bind_function(m, "output-port-write-line",      &io::output_port::write_line);
     utility::bind_function(m, "output-port-flush-output",    &io::output_port::flush_output);
+
+    return bootstrap(m, argc, argv);
 }
 
 }

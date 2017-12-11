@@ -31,17 +31,17 @@
 namespace yatl {
 struct frame {
     enum class frame_type {
-		global,
+	global,
         lambda_closure,
-		lambda_args,
-		let,
+	lambda_args,
+	let,
     };
     frame(frame_type type) 
         : type(type) 
     {}
 
     typedef std::map<std::string, lisp_abi::object*> object_map_t;
-	frame_type   type;
+    frame_type   type;
     object_map_t bindings;
 };
 

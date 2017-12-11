@@ -31,37 +31,14 @@
 #include <map>
 
 
-const char repl_soruce[] = {
-    #include <repl.inl>
-};
-
 namespace yatl {
 namespace language_core {
-void init_language_core(machine& m, int argc, char** argv);
+int init_language_core(machine& m, int argc, char** argv);
 }
-}
-
-int bootstrap(int argc, char** argv) {
-    yatl::machine m;
-    yatl::language_core::init_language_core(m, argc, argv);
-    
-    yatl::tokenizer tokenizer;
-    yatl::parser parser(m);
-
-    yatl::tokenizer::token_stream_t tokens;
-    
-    for(size_t ii = 0; ii < sizeof(repl_soruce); ++ii) {
-	tokenizer.add_char(tokens, repl_soruce[ii]);
-	yatl::parser::object_stream_t objects = parser.parse(tokens);
-	tokens.clear();
-	for (yatl::lisp_abi::object* o : objects) {
-	    m.eval(o);
-	}
-    }
-    return 0;
 }
 
 int main(int argc, char** argv)
 {
-    return bootstrap(argc, argv);
+    yatl::machine m;
+    return yatl::language_core::init_language_core(m, argc, argv);
 }

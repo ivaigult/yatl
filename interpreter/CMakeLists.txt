@@ -18,5 +18,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-add_executable(rc rc.cxx)
 
+add_executable(yatl yatl.cxx)
+target_link_libraries(yatl yatl_core)
+
+set_target_properties(yatl
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")

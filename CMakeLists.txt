@@ -25,40 +25,10 @@ cmake_minimum_required(VERSION 3.3)
 set (CMAKE_CXX_STANDARD 11)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules")
+
+add_subdirectory(core)
 add_subdirectory(rc)
-
-compile_resource(lisp/repl.scm repl.inl)
-
-add_executable(yatl
-    src/yatl.cxx
-    src/apply_workaround.hpp
-    src/error.hpp
-    src/error.cxx
-    src/function_helpers.hpp
-    src/language_core.cxx
-    src/lambda.cxx
-    src/lambda.hpp
-    src/lisp_abi.hpp
-    src/list_view.hpp
-    src/machine.cxx
-    src/machine.hpp
-    src/object.hpp
-    src/object_cast.hpp
-    src/object_io.hpp
-    src/object_io.cxx
-    src/parser.cxx
-    src/parser.hpp
-    src/port.cxx
-    src/port.hpp
-    src/signature_validation.hpp
-    src/sym_binding.cxx
-    src/sym_binding.hpp
-    src/tokenizer.cxx
-    src/tokenizer.hpp
-    ${CMAKE_CURRENT_BINARY_DIR}/repl.inl    
-)
-
-target_include_directories(yatl PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-
+add_subdirectory(interpreter)
 add_subdirectory(tests)
 
