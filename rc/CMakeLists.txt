@@ -20,11 +20,3 @@
 
 add_executable(rc rc.cxx)
 
-function(compile_resource src dst)
-    
-    add_custom_command(OUTPUT ${dst}
-	COMMAND $<TARGET_FILE:rc> ${CMAKE_CURRENT_SOURCE_DIR}/${src} ${CMAKE_CURRENT_BINARY_DIR}/${dst}
-	DEPENDS $<TARGET_FILE:rc> ${CMAKE_CURRENT_SOURCE_DIR}/${src})
-    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/${dst}
-	PROPERTIES GENERATED TRUE) 
-endfunction()
