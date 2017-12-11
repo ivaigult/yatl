@@ -24,29 +24,13 @@
     (repl-exec)
 )
 
-(define (load-file file)
-    (do ((keep-loading #t '())
-	 (scm-file (open-input-file file) '()))
-	keep-loading
-
-	(define read-obj (input-port-read scm-file))
-	(define eval-obj (eval read-obj))
-	(set! keep-loading (not (input-port-eof? scm-file)))
-    )
-)
-
-(define (yatl-main)
-    (define arg-counter 0)
-    (define files-to-load '())
-
-    (map (lambda (arg)
-        (cond
-            ((< 0 arg-counter) (set! files-to-load (cons arg files-to-load))))
-        (set! arg-counter (+ arg-counter 1))
-    ) yatl.argv)
+(define arg-counter 0)
+(define files-to-load '())
+(map (lambda (arg)
     (cond
-        ((not (equal? files-to-load '())) (load-file (car files-to-load)))
-	(#t                               (repl)))
-)
-
-(yatl-main)
+        ((< 0 arg-counter) (set! files-to-load (cons arg files-to-load))))
+    (set! arg-counter (+ arg-counter 1))
+) yatl.argv)
+(cond
+    ((not (equal? files-to-load '())) (load-file (car files-to-load)))
+    (#t                               (repl)))

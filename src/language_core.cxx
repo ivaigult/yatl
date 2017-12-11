@@ -21,6 +21,8 @@
 
 #include "function_helpers.hpp"
 #include "machine.hpp"
+#include "tokenizer.hpp"
+#include "parser.hpp"
 #include "lambda.hpp"
 #include "internal_helpers.hpp"
 #include "register_type.hpp"
@@ -28,6 +30,8 @@
 
 #include <algorithm>
 #include <cassert>
+#include <fstream>
+#include <sstream>
 
 namespace yatl {
 namespace language_core {
@@ -298,6 +302,30 @@ void init_language_core(machine& m, int argc, char** argv) {
 	    result = handler.value->eval(arg_list.front_pair());
 	}
         return result;
+    });
+
+    utility::bind_function(m, "load-file", [&m](lisp_abi::string& s) -> lisp_abi::object* {
+	std::ifstream file(s);
+	if (!file.good()) {
+	    std::stringstream msg_stream;
+	    msg_stream << "File " << s << " not found";
+	    throw error::runtime_error(m, m.alloc<lisp_abi::string>(msg_stream.str()));
+	}
+	    
+	tokenizer t;
+	parser p(m);
+	char sym = '\0';
+	yatl::tokenizer::token_stream_t tokens;
+	yatl::parser::object_stream_t objects;
+	for(;file.get(sym);) {
+	    t.add_char(tokens, sym);
+	    objects = p.parse(tokens);
+	    for (yatl::lisp_abi::object* o : objects) {
+		m.eval(o);
+	    }
+	    objects.clear();
+	    tokens.clear();
+	}
     });
 
     register_type<io::input_port>(m);
